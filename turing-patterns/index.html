@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turing Patterns Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Turing Patterns Explorer</h1>
+            <p class="subtitle">Explore reaction-diffusion systems that generate natural patterns</p>
+        </header>
+
+        <main class="main-content">
+            <div class="canvas-area">
+                <div class="canvas-wrapper">
+                    <canvas id="simulationCanvas"></canvas>
+                    <div class="canvas-overlay">
+                        <span class="pattern-name" id="patternName">Gray-Scott Model</span>
+                    </div>
+                    <div class="canvas-stats">
+                        <span>FPS: <span id="fpsCounter">60</span></span>
+                        <span>Resolution: <span id="resolution">512×512</span></span>
+                    </div>
+                    <div class="brush-cursor" id="brushCursor"></div>
+                </div>
+
+                <!-- Parameter Space Diagram -->
+                <div class="parameter-space-container">
+                    <h3>Parameter Space</h3>
+                    <canvas id="parameterSpace" width="280" height="200"></canvas>
+                    <div class="param-space-info">
+                        <span>Click to navigate • Current: F=<span id="currentF">0.055</span>, K=<span id="currentK">0.062</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <!-- System Selection -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="system">
+                        <span>System Selection</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="system">
+                        <select id="systemSelect" class="styled-select">
+                            <option value="gray-scott">Gray-Scott Model</option>
+                            <option value="brusselator">Brusselator Model</option>
+                            <option value="schnakenberg">Schnakenberg Model</option>
+                        </select>
+                        <p class="system-description" id="systemDescription">
+                            Classic reaction-diffusion system with feed (F) and kill (K) parameters.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Parameter Controls -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="parameters">
+                        <span>Parameters</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="parameters">
+                        <div class="param-control">
+                            <label>Feed Rate (F)</label>
+                            <div class="slider-with-input">
+                                <input type="range" id="feedRate" min="0" max="0.1" step="0.001" value="0.055">
+                                <input type="number" id="feedRateNum" min="0" max="0.1" step="0.001" value="0.055">
+                            </div>
+                        </div>
+                        <div class="param-control">
+                            <label>Kill Rate (K)</label>
+                            <div class="slider-with-input">
+                                <input type="range" id="killRate" min="0" max="0.08" step="0.001" value="0.062">
+                                <input type="number" id="killRateNum" min="0" max="0.08" step="0.001" value="0.062">
+                            </div>
+                        </div>
+                        <div class="param-control">
+                            <label>Diffusion A</label>
+                            <div class="slider-with-input">
+                                <input type="range" id="diffusionA" min="0.1" max="0.3" step="0.01" value="0.21">
+                                <input type="number" id="diffusionANum" min="0.1" max="0.3" step="0.01" value="0.21">
+                            </div>
+                        </div>
+                        <div class="param-control">
+                            <label>Diffusion B</label>
+                            <div class="slider-with-input">
+                                <input type="range" id="diffusionB" min="0.05" max="0.2" step="0.01" value="0.105">
+                                <input type="number" id="diffusionBNum" min="0.05" max="0.2" step="0.01" value="0.105">
+                            </div>
+                        </div>
+                        <div class="param-control">
+                            <label>Simulation Speed</label>
+                            <div class="slider-with-input">
+                                <input type="range" id="simSpeed" min="0.5" max="2" step="0.1" value="1">
+                                <input type="number" id="simSpeedNum" min="0.5" max="2" step="0.1" value="1">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Preset Gallery -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="presets">
+                        <span>Preset Gallery</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="presets">
+                        <div class="preset-grid" id="presetGrid">
+                            <!-- Presets will be generated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Interactive Tools -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="tools">
+                        <span>Interactive Tools</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="tools">
+                        <div class="tool-buttons">
+                            <button class="tool-btn active" data-tool="brush" title="Brush Tool">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92 1.22 2.49 2 4 2 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3zm13.71-9.37l-1.34-1.34a.996.996 0 00-1.41 0L9 12.25 11.75 15l8.96-8.96a.996.996 0 000-1.41z"/></svg>
+                            </button>
+                            <button class="tool-btn" data-tool="eraser" title="Eraser">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.24 3.56l4.95 4.94-12.02 12.02-4.95-4.95 12.02-12.01zm-6.36 16.95l-5.66-5.66 2.83-2.83 5.66 5.66-2.83 2.83z"/></svg>
+                            </button>
+                            <button class="tool-btn" data-tool="stamp" title="Stamp Pattern">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+                            </button>
+                        </div>
+                        <div class="tool-options">
+                            <div class="param-control">
+                                <label>Chemical</label>
+                                <div class="toggle-group">
+                                    <button class="toggle-btn active" data-chemical="B">B (Activator)</button>
+                                    <button class="toggle-btn" data-chemical="A">A (Inhibitor)</button>
+                                </div>
+                            </div>
+                            <div class="param-control">
+                                <label>Brush Size: <span id="brushSizeVal">30</span>px</label>
+                                <input type="range" id="brushSize" min="5" max="100" value="30">
+                            </div>
+                            <div class="param-control">
+                                <label>Brush Strength: <span id="brushStrengthVal">1.0</span></label>
+                                <input type="range" id="brushStrength" min="0" max="1" step="0.1" value="1">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Animation & Journey -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="journey">
+                        <span>Parameter Journey</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="journey">
+                        <div class="journey-controls">
+                            <select id="journeyType" class="styled-select">
+                                <option value="none">None</option>
+                                <option value="linear">Linear Path</option>
+                                <option value="circular">Circular Orbit</option>
+                                <option value="figure8">Figure-8</option>
+                                <option value="random">Random Walk</option>
+                            </select>
+                            <button id="startJourney" class="btn primary">Start Journey</button>
+                        </div>
+                        <div class="param-control">
+                            <label>Journey Speed: <span id="journeySpeedVal">1.0</span>x</label>
+                            <input type="range" id="journeySpeed" min="0.5" max="3" step="0.5" value="1">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visual Settings -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="visual">
+                        <span>Visual Settings</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="visual">
+                        <div class="param-control">
+                            <label>Color Scheme</label>
+                            <select id="colorScheme" class="styled-select">
+                                <option value="classic">Classic (B&W)</option>
+                                <option value="thermal">Thermal</option>
+                                <option value="ocean">Ocean</option>
+                                <option value="forest">Forest</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="neon">Neon</option>
+                            </select>
+                        </div>
+                        <div class="param-control">
+                            <label>Contrast: <span id="contrastVal">1.0</span></label>
+                            <input type="range" id="contrast" min="0.5" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="param-control">
+                            <label>Brightness: <span id="brightnessVal">1.0</span></label>
+                            <input type="range" id="brightness" min="0.5" max="1.5" step="0.1" value="1">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Playback Controls -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="playback">
+                        <span>Playback</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="playback">
+                        <div class="playback-buttons">
+                            <button id="playPauseBtn" class="btn icon-btn" title="Play/Pause (Space)">
+                                <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                            <button id="resetBtn" class="btn icon-btn" title="Reset (R)">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                            </button>
+                            <button id="stepBtn" class="btn icon-btn" title="Step Forward">
+                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Export -->
+                <section class="control-section">
+                    <h3 class="section-header" data-toggle="export">
+                        <span>Export</span>
+                        <span class="toggle-icon">−</span>
+                    </h3>
+                    <div class="section-content" id="export">
+                        <div class="export-options">
+                            <select id="exportResolution" class="styled-select">
+                                <option value="1">1x (512px)</option>
+                                <option value="2">2x (1024px)</option>
+                                <option value="4">4x (2048px)</option>
+                            </select>
+                            <button id="exportBtn" class="btn primary">Download PNG</button>
+                        </div>
+                        <button id="shareBtn" class="btn secondary full-width">Copy Share URL</button>
+                    </div>
+                </section>
+
+                <!-- Learn More -->
+                <section class="control-section info-section">
+                    <h3 class="section-header" data-toggle="info">
+                        <span>Learn More</span>
+                        <span class="toggle-icon">+</span>
+                    </h3>
+                    <div class="section-content collapsed" id="info">
+                        <div class="info-content">
+                            <p><strong>Turing Patterns</strong> emerge from reaction-diffusion systems where two chemicals interact and diffuse at different rates.</p>
+                            <p>The <strong>Gray-Scott model</strong> uses:</p>
+                            <ul>
+                                <li><strong>F</strong> - Feed rate: how fast chemical A is added</li>
+                                <li><strong>K</strong> - Kill rate: how fast chemical B is removed</li>
+                            </ul>
+                            <p>These simple rules create patterns found throughout nature: animal coats, shells, coral, and fingerprints.</p>
+                            <p class="info-link"><a href="https://www.karlsims.com/rd.html" target="_blank">Learn more about reaction-diffusion →</a></p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>Based on Alan Turing's 1952 paper "The Chemical Basis of Morphogenesis"</p>
+        </footer>
+    </div>
+
+    <script src="simulation.js"></script>
+</body>
+</html>
