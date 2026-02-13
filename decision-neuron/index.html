@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decision Neuron Quest</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #1f2940;
+            --text-primary: #e8e8e8;
+            --text-secondary: #a0a0b0;
+            --accent-green: #00ff88;
+            --accent-red: #ff4466;
+            --accent-orange: #ff8c00;
+            --accent-blue: #00d4ff;
+            --border: #2a3a5a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .app-container { max-width: 1400px; margin: 0 auto; padding: 16px; }
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { color: var(--text-secondary); margin-top: 8px; }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: var(--bg-primary);
+            border-color: var(--accent-blue);
+            font-weight: 600;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        .card h3 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Sliders */
+        .slider-group { margin-bottom: 16px; }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .slider-header .emoji { margin-right: 6px; }
+        .slider-header .value {
+            font-family: 'SF Mono', Monaco, monospace;
+            color: var(--accent-blue);
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        .slider-group.positive input[type="range"]::-webkit-slider-thumb { background: var(--accent-green); }
+        .slider-group.negative input[type="range"]::-webkit-slider-thumb { background: var(--accent-red); }
+
+        /* Neuron Visualization */
+        .neuron-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+        }
+        .neuron {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 40px currentColor;
+            margin-bottom: 20px;
+        }
+        .neuron.go {
+            background: radial-gradient(circle, #00ff8855, #00ff8811);
+            color: var(--accent-green);
+            border: 3px solid var(--accent-green);
+        }
+        .neuron.skip {
+            background: radial-gradient(circle, #ff446655, #ff446611);
+            color: var(--accent-red);
+            border: 3px solid var(--accent-red);
+        }
+        .neuron .label { font-size: 0.9rem; font-weight: 400; margin-top: 8px; }
+        .result-text {
+            font-size: 1.3rem;
+            text-align: center;
+            padding: 16px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+        }
+        .celebration {
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        /* Math Display */
+        .math-display {
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+        .math-display .equation { margin-bottom: 8px; }
+        .math-display .highlight { color: var(--accent-orange); }
+
+        /* Heatmap Canvas */
+        .heatmap-container { position: relative; }
+        #boundaryCanvas {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        .axis-selector {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .axis-selector label { color: var(--text-secondary); font-size: 0.85rem; }
+        .axis-selector select {
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            margin-left: 8px;
+        }
+
+        /* Training Mode */
+        .training-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent-blue); color: var(--bg-primary); }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent-blue); }
+        .btn-success { background: var(--accent-green); color: var(--bg-primary); }
+        .btn-danger { background: var(--accent-red); color: white; }
+
+        .training-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .stat-box {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 1.3rem; font-weight: 600; color: var(--accent-blue); }
+        .stat-box .label { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+        #trainingCanvas {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+
+        /* Activation Functions */
+        .activation-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .activation-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .activation-btn:hover { border-color: var(--accent-blue); }
+        .activation-btn.active { border-color: var(--accent-blue); background: var(--accent-blue); color: var(--bg-primary); }
+        .activation-btn .name { font-weight: 600; margin-bottom: 4px; }
+        .activation-btn .formula { font-size: 0.75rem; font-family: monospace; opacity: 0.8; }
+
+        #activationChart {
+            width: 100%;
+            height: 250px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Sensitivity Chart */
+        #sensitivityChart {
+            width: 100%;
+            height: 300px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Scenarios */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .scenario-btn {
+            padding: 20px 16px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .scenario-btn:hover { border-color: var(--accent-orange); transform: translateY(-2px); }
+        .scenario-btn.active { border-color: var(--accent-orange); background: rgba(255,140,0,0.1); }
+        .scenario-btn .emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+        .scenario-btn .name { font-weight: 500; }
+
+        /* Two Neuron Chain */
+        .chain-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 30px;
+            flex-wrap: wrap;
+        }
+        .chain-neuron {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .synapse {
+            width: 80px;
+            height: 8px;
+            background: var(--accent-orange);
+            border-radius: 4px;
+            position: relative;
+        }
+        .synapse::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            border: 8px solid transparent;
+            border-left-color: var(--accent-orange);
+        }
+        .synapse-label {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Decision Neuron Quest</h1>
+            <p class="subtitle">Explore how a single neuron makes decisions</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="decide">Decide</button>
+            <button class="tab-btn" data-tab="boundary">Boundary</button>
+            <button class="tab-btn" data-tab="train">Train</button>
+            <button class="tab-btn" data-tab="explore">Explore</button>
+            <button class="tab-btn" data-tab="scenarios">Scenarios</button>
+        </nav>
+
+        <!-- DECIDE TAB -->
+        <div class="tab-panel active" id="decide">
+            <div class="main-grid">
+                <div class="card">
+                    <h3 id="scenarioTitle">Should I Go to the Gym Today?</h3>
+                    <div id="inputSliders">
+                        <!-- Generated by JS -->
+                    </div>
+                    <div class="slider-group" style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <div class="slider-header">
+                            <span><span class="emoji">🧠</span><span id="biasLabel">Gym Rat Tendency</span></span>
+                            <span class="value" id="biasValue">0.20</span>
+                        </div>
+                        <input type="range" id="biasSlider" min="-3" max="3" step="0.1" value="0.2">
+                    </div>
+                    <div class="math-display" id="mathDisplay">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Decision</h3>
+                    <div class="neuron-container">
+                        <div class="neuron go" id="neuronViz">
+                            <span id="neuronProb">75%</span>
+                            <span class="label" id="neuronLabel">GO</span>
+                        </div>
+                        <div class="result-text" id="resultText">
+                            Lace up those shoes! 💪
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOUNDARY TAB -->
+        <div class="tab-panel" id="boundary">
+            <div class="card">
+                <h3>Decision Boundary Visualizer</h3>
+                <div class="axis-selector">
+                    <label>X-Axis: <select id="xAxisSelect"></select></label>
+                    <label>Y-Axis: <select id="yAxisSelect"></select></label>
+                    <label>Threshold: <input type="range" id="thresholdSlider" min="0" max="100" value="50" style="width:100px;"> <span id="thresholdValue">50%</span></label>
+                </div>
+                <div class="heatmap-container">
+                    <canvas id="boundaryCanvas"></canvas>
+                </div>
+                <p style="margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+                    Gold line = decision boundary at threshold. Crosshair = current slider position.
+                </p>
+            </div>
+        </div>
+
+        <!-- TRAIN TAB -->
+        <div class="tab-panel" id="train">
+            <div class="card">
+                <h3>Perceptron Training Mode</h3>
+                <div class="training-controls">
+                    <button class="btn btn-success" id="labelGoBtn">Label: Went ✅</button>
+                    <button class="btn btn-danger" id="labelSkipBtn">Label: Skipped ❌</button>
+                    <button class="btn btn-primary" id="stepBtn">Step</button>
+                    <button class="btn btn-primary" id="trainBtn">Train (10 steps)</button>
+                    <button class="btn btn-secondary" id="resetTrainBtn">Reset</button>
+                </div>
+                <div class="training-stats">
+                    <div class="stat-box"><div class="value" id="stepCount">0</div><div class="label">Steps</div></div>
+                    <div class="stat-box"><div class="value" id="accuracy">--</div><div class="label">Accuracy</div></div>
+                    <div class="stat-box"><div class="value" id="pointCount">0</div><div class="label">Points</div></div>
+                    <div class="stat-box">
+                        <div class="value"><input type="number" id="learningRate" value="0.1" min="0.01" max="1" step="0.01" style="width:60px;background:transparent;border:none;color:var(--accent-blue);font-size:1.3rem;text-align:center;"></div>
+                        <div class="label">Learning Rate</div>
+                    </div>
+                </div>
+                <div class="axis-selector">
+                    <label>X-Axis: <select id="trainXAxis"></select></label>
+                    <label>Y-Axis: <select id="trainYAxis"></select></label>
+                </div>
+                <canvas id="trainingCanvas"></canvas>
+                <div style="margin-top: 12px;">
+                    <strong>Presets:</strong>
+                    <button class="btn btn-secondary" data-preset="balanced">Balanced</button>
+                    <button class="btn btn-secondary" data-preset="energy">Energy-Dependent</button>
+                    <button class="btn btn-secondary" data-preset="guilty">Lazy but Guilty</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPLORE TAB -->
+        <div class="tab-panel" id="explore">
+            <div class="main-grid">
+                <!-- Activation Functions -->
+                <div class="card">
+                    <h3>Activation Function Showdown</h3>
+                    <div class="activation-selector">
+                        <button class="activation-btn active" data-activation="sigmoid">
+                            <div class="name">Sigmoid</div>
+                            <div class="formula">1/(1+e^-z)</div>
+                        </button>
+                        <button class="activation-btn" data-activation="step">
+                            <div class="name">Step</div>
+                            <div class="formula">z≥0 ? 1 : 0</div>
+                        </button>
+                        <button class="activation-btn" data-activation="relu">
+                            <div class="name">ReLU</div>
+                            <div class="formula">max(0, z)</div>
+                        </button>
+                    </div>
+                    <canvas id="activationChart"></canvas>
+                    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-secondary);">Current z = <span id="currentZ">0.00</span></p>
+                </div>
+
+                <!-- Sensitivity Analysis -->
+                <div class="card">
+                    <h3>Sensitivity Analysis</h3>
+                    <canvas id="sensitivityChart"></canvas>
+                    <p style="margin-top:8px;font-size:0.8rem;color:var(--text-secondary);">Each line shows output probability as that input sweeps 0→1</p>
+                </div>
+            </div>
+
+            <!-- Two-Neuron Chain -->
+            <div class="card">
+                <h3>Two-Neuron Chain</h3>
+                <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                    <input type="checkbox" id="showChain"> Show second neuron (Social factors)
+                </label>
+                <div id="chainSection" style="display:none;">
+                    <div class="chain-container">
+                        <div class="chain-neuron go" id="neuron1">
+                            <span id="n1Prob">75%</span>
+                            <span class="label">Physical</span>
+                        </div>
+                        <div class="synapse">
+                            <span class="synapse-label">w=<span id="chainWeightVal">1.0</span></span>
+                        </div>
+                        <div class="chain-neuron go" id="neuron2">
+                            <span id="n2Prob">82%</span>
+                            <span class="label">Final</span>
+                        </div>
+                    </div>
+                    <div style="max-width:400px;margin:0 auto;">
+                        <div class="slider-group">
+                            <div class="slider-header"><span>Chain Weight</span><span class="value" id="chainWVal">1.0</span></div>
+                            <input type="range" id="chainWeight" min="-2" max="2" step="0.1" value="1">
+                        </div>
+                        <div class="slider-group positive">
+                            <div class="slider-header"><span>💰 Budget Available</span><span class="value" id="budgetVal">0.50</span></div>
+                            <input type="range" id="budgetSlider" min="0" max="1" step="0.05" value="0.5">
+                        </div>
+                        <div class="slider-group positive">
+                            <div class="slider-header"><span>👫 Workout Partner</span><span class="value" id="partnerVal">0.50</span></div>
+                            <input type="range" id="partnerSlider" min="0" max="1" step="0.05" value="0.5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCENARIOS TAB -->
+        <div class="tab-panel" id="scenarios">
+            <div class="card">
+                <h3>Choose a Scenario</h3>
+                <div class="scenario-grid" id="scenarioGrid">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Decision Neuron Quest - Understanding Neural Network Fundamentals</p>
+        </footer>
+    </div>
+
+    <script>
+        // ========== SCENARIOS ==========
+        const scenarios = {
+            gym: {
+                title: "Should I Go to the Gym Today?",
+                emoji: "🏋️",
+                inputs: [
+                    { name: "Energy Level", emoji: "⚡", weight: 0.8, default: 0.5, positive: true },
+                    { name: "Guilt Factor", emoji: "😬", weight: 0.6, default: 0.3, positive: true },
+                    { name: "Schedule Freedom", emoji: "📅", weight: 0.5, default: 0.5, positive: true },
+                    { name: "Soreness", emoji: "💪", weight: -0.7, default: 0.2, positive: false },
+                    { name: "Weather/Commute", emoji: "🌧️", weight: -0.3, default: 0.3, positive: false }
+                ],
+                biasName: "Gym Rat Tendency",
+                biasDefault: 0.2,
+                yesText: "Lace up those shoes! 💪",
+                noText: "Rest day it is 😴"
+            },
+            college: {
+                title: "Choose This College?",
+                emoji: "🎓",
+                inputs: [
+                    { name: "Reputation", emoji: "⭐", weight: 0.7, default: 0.6, positive: true },
+                    { name: "Cost", emoji: "💸", weight: -0.8, default: 0.5, positive: false },
+                    { name: "Distance", emoji: "📍", weight: -0.3, default: 0.4, positive: false },
+                    { name: "Social Scene", emoji: "🎉", weight: 0.4, default: 0.5, positive: true },
+                    { name: "Program Fit", emoji: "📚", weight: 0.9, default: 0.7, positive: true }
+                ],
+                biasName: "Adventure Spirit",
+                biasDefault: 0,
+                yesText: "This is the one! 🎓",
+                noText: "Keep looking... 🔍"
+            },
+            pet: {
+                title: "Adopt a Pet?",
+                emoji: "🐕",
+                inputs: [
+                    { name: "Free Time", emoji: "⏰", weight: 0.6, default: 0.5, positive: true },
+                    { name: "Living Space", emoji: "🏠", weight: 0.5, default: 0.6, positive: true },
+                    { name: "Budget", emoji: "💰", weight: -0.4, default: 0.5, positive: false },
+                    { name: "Allergies", emoji: "🤧", weight: -0.7, default: 0.2, positive: false },
+                    { name: "Loneliness", emoji: "💔", weight: 0.8, default: 0.4, positive: true }
+                ],
+                biasName: "Animal Lover",
+                biasDefault: 0.3,
+                yesText: "Welcome your new friend! 🐾",
+                noText: "Maybe not right now 🤔"
+            },
+            roadtrip: {
+                title: "Take a Road Trip?",
+                emoji: "🚗",
+                inputs: [
+                    { name: "Budget", emoji: "💵", weight: -0.3, default: 0.5, positive: false },
+                    { name: "Free Days", emoji: "📆", weight: 0.7, default: 0.4, positive: true },
+                    { name: "Friend Availability", emoji: "👥", weight: 0.8, default: 0.5, positive: true },
+                    { name: "Car Condition", emoji: "🚙", weight: 0.4, default: 0.7, positive: true },
+                    { name: "Distance", emoji: "🛣️", weight: -0.5, default: 0.3, positive: false }
+                ],
+                biasName: "Wanderlust",
+                biasDefault: 0.1,
+                yesText: "Hit the road! 🛣️",
+                noText: "Stay home this time 🏠"
+            },
+            tech: {
+                title: "Upgrade Your Tech?",
+                emoji: "💻",
+                inputs: [
+                    { name: "Performance Gain", emoji: "🚀", weight: 0.7, default: 0.6, positive: true },
+                    { name: "Price", emoji: "💸", weight: -0.9, default: 0.5, positive: false },
+                    { name: "Device Age", emoji: "📅", weight: 0.5, default: 0.4, positive: true },
+                    { name: "Reviews", emoji: "⭐", weight: 0.4, default: 0.7, positive: true },
+                    { name: "Impulse Level", emoji: "😈", weight: 0.3, default: 0.3, positive: true }
+                ],
+                biasName: "Tech Enthusiast",
+                biasDefault: 0.2,
+                yesText: "Treat yourself! 💻",
+                noText: "Your current device is fine 👍"
+            }
+        };
+
+        // ========== STATE ==========
+        let currentScenario = 'gym';
+        let inputs = [];
+        let weights = [];
+        let bias = 0.2;
+        let activationFn = 'sigmoid';
+        let trainingPoints = [];
+        let trainStep = 0;
+        let currentLabel = 1; // 1 = go, 0 = skip
+        let xAxisIdx = 0, yAxisIdx = 3;
+
+        // ========== INITIALIZATION ==========
+        function init() {
+            loadScenario('gym');
+            setupTabs();
+            setupSliderListeners();
+            setupBoundary();
+            setupTraining();
+            setupExplore();
+            setupScenarios();
+            update();
+        }
+
+        function loadScenario(key) {
+            currentScenario = key;
+            const scenario = scenarios[key];
+            inputs = scenario.inputs.map(i => i.default);
+            weights = scenario.inputs.map(i => i.weight);
+            bias = scenario.biasDefault;
+
+            document.getElementById('scenarioTitle').textContent = scenario.title;
+            document.getElementById('biasLabel').textContent = scenario.biasName;
+            document.getElementById('biasSlider').value = bias;
+
+            // Generate input sliders
+            const container = document.getElementById('inputSliders');
+            container.innerHTML = scenario.inputs.map((inp, i) => `
+                <div class="slider-group ${inp.positive ? 'positive' : 'negative'}">
+                    <div class="slider-header">
+                        <span><span class="emoji">${inp.emoji}</span>${inp.name} <small style="color:var(--text-secondary)">(w=${inp.weight.toFixed(1)})</small></span>
+                        <span class="value" id="input${i}Val">${inp.default.toFixed(2)}</span>
+                    </div>
+                    <input type="range" id="input${i}" min="0" max="1" step="0.01" value="${inp.default}" data-idx="${i}">
+                </div>
+            `).join('');
+
+            // Re-setup listeners
+            setupSliderListeners();
+            populateAxisSelects();
+            update();
+        }
+
+        function setupSliderListeners() {
+            document.querySelectorAll('#inputSliders input[type="range"]').forEach(slider => {
+                slider.addEventListener('input', (e) => {
+                    const idx = parseInt(e.target.dataset.idx);
+                    inputs[idx] = parseFloat(e.target.value);
+                    document.getElementById(`input${idx}Val`).textContent = inputs[idx].toFixed(2);
+                    update();
+                });
+            });
+
+            document.getElementById('biasSlider').addEventListener('input', (e) => {
+                bias = parseFloat(e.target.value);
+                document.getElementById('biasValue').textContent = bias.toFixed(2);
+                update();
+            });
+        }
+
+        // ========== ACTIVATION FUNCTIONS ==========
+        function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+        function step(z) { return z >= 0 ? 1 : 0; }
+        function relu(z) { return Math.max(0, z); }
+
+        function activate(z) {
+            switch (activationFn) {
+                case 'sigmoid': return sigmoid(z);
+                case 'step': return step(z);
+                case 'relu': return Math.min(1, relu(z) / 3); // Normalize for display
+                default: return sigmoid(z);
+            }
+        }
+
+        // ========== COMPUTE ==========
+        function computeZ(inputVals = inputs, w = weights, b = bias) {
+            let z = b;
+            for (let i = 0; i < inputVals.length; i++) {
+                z += w[i] * inputVals[i];
+            }
+            return z;
+        }
+
+        function computeOutput(inputVals = inputs, w = weights, b = bias) {
+            return activate(computeZ(inputVals, w, b));
+        }
+
+        // ========== UPDATE ==========
+        function update() {
+            const z = computeZ();
+            const output = computeOutput();
+            const prob = Math.round(output * 100);
+
+            // Update neuron
+            const neuron = document.getElementById('neuronViz');
+            const isGo = prob >= 50;
+            neuron.className = 'neuron ' + (isGo ? 'go' : 'skip');
+            if (prob > 80) neuron.classList.add('celebration');
+            else neuron.classList.remove('celebration');
+
+            document.getElementById('neuronProb').textContent = prob + '%';
+            document.getElementById('neuronLabel').textContent = isGo ? 'GO' : 'SKIP';
+
+            // Update result text
+            const scenario = scenarios[currentScenario];
+            document.getElementById('resultText').textContent =
+                `${prob}% — ${isGo ? scenario.yesText : scenario.noText}`;
+
+            // Update math display
+            const mathParts = weights.map((w, i) =>
+                `<span class="highlight">${w.toFixed(1)}</span>×${inputs[i].toFixed(2)}`
+            ).join(' + ');
+            document.getElementById('mathDisplay').innerHTML = `
+                <div class="equation">z = ${mathParts} + <span class="highlight">${bias.toFixed(2)}</span></div>
+                <div class="equation">z = <span class="highlight">${z.toFixed(3)}</span></div>
+                <div class="equation">σ(z) = <span class="highlight">${output.toFixed(3)}</span> = ${prob}%</div>
+            `;
+
+            // Update current Z display
+            document.getElementById('currentZ').textContent = z.toFixed(2);
+
+            // Update visualizations
+            drawBoundary();
+            drawActivationChart();
+            drawSensitivity();
+            updateChain();
+        }
+
+        // ========== TABS ==========
+        function setupTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                    update();
+                });
+            });
+        }
+
+        // ========== BOUNDARY VISUALIZER ==========
+        function populateAxisSelects() {
+            const scenario = scenarios[currentScenario];
+            const options = scenario.inputs.map((inp, i) =>
+                `<option value="${i}">${inp.name}</option>`
+            ).join('');
+
+            ['xAxisSelect', 'yAxisSelect', 'trainXAxis', 'trainYAxis'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = options;
+                }
+            });
+
+            document.getElementById('xAxisSelect').value = 0;
+            document.getElementById('yAxisSelect').value = 3;
+            document.getElementById('trainXAxis').value = 0;
+            document.getElementById('trainYAxis').value = 3;
+            xAxisIdx = 0;
+            yAxisIdx = 3;
+        }
+
+        function setupBoundary() {
+            document.getElementById('xAxisSelect').addEventListener('change', (e) => {
+                xAxisIdx = parseInt(e.target.value);
+                drawBoundary();
+            });
+            document.getElementById('yAxisSelect').addEventListener('change', (e) => {
+                yAxisIdx = parseInt(e.target.value);
+                drawBoundary();
+            });
+            document.getElementById('thresholdSlider').addEventListener('input', (e) => {
+                document.getElementById('thresholdValue').textContent = e.target.value + '%';
+                drawBoundary();
+            });
+        }
+
+        function drawBoundary() {
+            const canvas = document.getElementById('boundaryCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            const w = rect.width, h = rect.height;
+
+            const threshold = parseInt(document.getElementById('thresholdSlider').value) / 100;
+            const resolution = 50;
+
+            // Draw heatmap
+            for (let py = 0; py < resolution; py++) {
+                for (let px = 0; px < resolution; px++) {
+                    const xVal = px / (resolution - 1);
+                    const yVal = 1 - py / (resolution - 1);
+
+                    const testInputs = [...inputs];
+                    testInputs[xAxisIdx] = xVal;
+                    testInputs[yAxisIdx] = yVal;
+
+                    const output = computeOutput(testInputs);
+
+                    // Color: blue (0) -> white (0.5) -> green (1)
+                    let r, g, b;
+                    if (output < 0.5) {
+                        const t = output * 2;
+                        r = Math.floor(50 + t * 205);
+                        g = Math.floor(50 + t * 205);
+                        b = Math.floor(150 + t * 105);
+                    } else {
+                        const t = (output - 0.5) * 2;
+                        r = Math.floor(255 - t * 205);
+                        g = Math.floor(255);
+                        b = Math.floor(255 - t * 155);
+                    }
+
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.fillRect(px * w / resolution, py * h / resolution, w / resolution + 1, h / resolution + 1);
+                }
+            }
+
+            // Draw decision boundary (gold line where output = threshold)
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let started = false;
+            for (let px = 0; px < w; px++) {
+                const xVal = px / w;
+                // Find y where output = threshold
+                for (let py = 0; py < h; py++) {
+                    const yVal = 1 - py / h;
+                    const testInputs = [...inputs];
+                    testInputs[xAxisIdx] = xVal;
+                    testInputs[yAxisIdx] = yVal;
+                    const output = computeOutput(testInputs);
+                    if (Math.abs(output - threshold) < 0.02) {
+                        if (!started) {
+                            ctx.moveTo(px, py);
+                            started = true;
+                        } else {
+                            ctx.lineTo(px, py);
+                        }
+                        break;
+                    }
+                }
+            }
+            ctx.stroke();
+
+            // Draw crosshair at current position
+            const cx = inputs[xAxisIdx] * w;
+            const cy = (1 - inputs[yAxisIdx]) * h;
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(cx - 15, cy);
+            ctx.lineTo(cx + 15, cy);
+            ctx.moveTo(cx, cy - 15);
+            ctx.lineTo(cx, cy + 15);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+        }
+
+        // ========== TRAINING MODE ==========
+        function setupTraining() {
+            document.getElementById('labelGoBtn').addEventListener('click', () => {
+                currentLabel = 1;
+                document.getElementById('labelGoBtn').classList.add('active');
+                document.getElementById('labelSkipBtn').classList.remove('active');
+            });
+            document.getElementById('labelSkipBtn').addEventListener('click', () => {
+                currentLabel = 0;
+                document.getElementById('labelSkipBtn').classList.add('active');
+                document.getElementById('labelGoBtn').classList.remove('active');
+            });
+
+            const trainCanvas = document.getElementById('trainingCanvas');
+            trainCanvas.addEventListener('click', (e) => {
+                const rect = trainCanvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = 1 - (e.clientY - rect.top) / rect.height;
+                trainingPoints.push({ x, y, label: currentLabel });
+                document.getElementById('pointCount').textContent = trainingPoints.length;
+                drawTraining();
+            });
+
+            document.getElementById('stepBtn').addEventListener('click', trainStep);
+            document.getElementById('trainBtn').addEventListener('click', () => {
+                for (let i = 0; i < 10; i++) setTimeout(() => trainStep(), i * 100);
+            });
+            document.getElementById('resetTrainBtn').addEventListener('click', () => {
+                trainingPoints = [];
+                trainStep = 0;
+                weights = scenarios[currentScenario].inputs.map(i => i.weight);
+                bias = scenarios[currentScenario].biasDefault;
+                document.getElementById('stepCount').textContent = '0';
+                document.getElementById('pointCount').textContent = '0';
+                document.getElementById('accuracy').textContent = '--';
+                update();
+            });
+
+            document.getElementById('trainXAxis').addEventListener('change', drawTraining);
+            document.getElementById('trainYAxis').addEventListener('change', drawTraining);
+
+            // Presets
+            document.querySelectorAll('[data-preset]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const preset = btn.dataset.preset;
+                    trainingPoints = [];
+                    if (preset === 'balanced') {
+                        for (let i = 0; i < 10; i++) {
+                            trainingPoints.push({ x: 0.2 + Math.random() * 0.3, y: 0.5 + Math.random() * 0.4, label: 0 });
+                            trainingPoints.push({ x: 0.5 + Math.random() * 0.4, y: 0.1 + Math.random() * 0.4, label: 1 });
+                        }
+                    } else if (preset === 'energy') {
+                        for (let i = 0; i < 10; i++) {
+                            trainingPoints.push({ x: Math.random() * 0.4, y: Math.random(), label: 0 });
+                            trainingPoints.push({ x: 0.6 + Math.random() * 0.4, y: Math.random(), label: 1 });
+                        }
+                    } else if (preset === 'guilty') {
+                        for (let i = 0; i < 8; i++) {
+                            trainingPoints.push({ x: 0.2 + Math.random() * 0.3, y: 0.7 + Math.random() * 0.25, label: 1 });
+                            trainingPoints.push({ x: 0.4 + Math.random() * 0.4, y: Math.random() * 0.4, label: 0 });
+                        }
+                    }
+                    document.getElementById('pointCount').textContent = trainingPoints.length;
+                    drawTraining();
+                });
+            });
+        }
+
+        function trainStep() {
+            if (trainingPoints.length === 0) return;
+            const lr = parseFloat(document.getElementById('learningRate').value);
+            const txIdx = parseInt(document.getElementById('trainXAxis').value);
+            const tyIdx = parseInt(document.getElementById('trainYAxis').value);
+
+            // Pick random point
+            const pt = trainingPoints[Math.floor(Math.random() * trainingPoints.length)];
+            const testInputs = [...inputs];
+            testInputs[txIdx] = pt.x;
+            testInputs[tyIdx] = pt.y;
+
+            const output = computeOutput(testInputs);
+            const error = pt.label - output;
+
+            // Update weights for the two training axes
+            weights[txIdx] += lr * error * pt.x;
+            weights[tyIdx] += lr * error * pt.y;
+            bias += lr * error;
+
+            trainStep++;
+            document.getElementById('stepCount').textContent = trainStep;
+
+            // Compute accuracy
+            let correct = 0;
+            trainingPoints.forEach(p => {
+                const ti = [...inputs];
+                ti[txIdx] = p.x;
+                ti[tyIdx] = p.y;
+                const pred = computeOutput(ti) >= 0.5 ? 1 : 0;
+                if (pred === p.label) correct++;
+            });
+            document.getElementById('accuracy').textContent = Math.round(correct / trainingPoints.length * 100) + '%';
+
+            update();
+            drawTraining();
+        }
+
+        function drawTraining() {
+            const canvas = document.getElementById('trainingCanvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            const w = rect.width, h = rect.height;
+
+            const txIdx = parseInt(document.getElementById('trainXAxis').value);
+            const tyIdx = parseInt(document.getElementById('trainYAxis').value);
+
+            // Draw heatmap
+            const resolution = 40;
+            for (let py = 0; py < resolution; py++) {
+                for (let px = 0; px < resolution; px++) {
+                    const xVal = px / (resolution - 1);
+                    const yVal = 1 - py / (resolution - 1);
+
+                    const testInputs = [...inputs];
+                    testInputs[txIdx] = xVal;
+                    testInputs[tyIdx] = yVal;
+
+                    const output = computeOutput(testInputs);
+
+                    let r, g, b;
+                    if (output < 0.5) {
+                        const t = output * 2;
+                        r = Math.floor(100 + t * 100);
+                        g = Math.floor(50 + t * 100);
+                        b = Math.floor(50);
+                    } else {
+                        const t = (output - 0.5) * 2;
+                        r = Math.floor(50);
+                        g = Math.floor(100 + t * 100);
+                        b = Math.floor(50 + t * 50);
+                    }
+
+                    ctx.fillStyle = `rgb(${r},${g},${b})`;
+                    ctx.fillRect(px * w / resolution, py * h / resolution, w / resolution + 1, h / resolution + 1);
+                }
+            }
+
+            // Draw points
+            trainingPoints.forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.x * w, (1 - pt.y) * h, 10, 0, Math.PI * 2);
+                ctx.fillStyle = pt.label === 1 ? '#00ff88' : '#ff4466';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+
+            // Draw boundary line
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let started = false;
+            for (let px = 0; px < w; px++) {
+                const xVal = px / w;
+                for (let py = 0; py < h; py++) {
+                    const yVal = 1 - py / h;
+                    const testInputs = [...inputs];
+                    testInputs[txIdx] = xVal;
+                    testInputs[tyIdx] = yVal;
+                    const output = computeOutput(testInputs);
+                    if (Math.abs(output - 0.5) < 0.03) {
+                        if (!started) { ctx.moveTo(px, py); started = true; }
+                        else ctx.lineTo(px, py);
+                        break;
+                    }
+                }
+            }
+            ctx.stroke();
+        }
+
+        // ========== EXPLORE TAB ==========
+        function setupExplore() {
+            document.querySelectorAll('.activation-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.activation-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activationFn = btn.dataset.activation;
+                    update();
+                });
+            });
+
+            document.getElementById('showChain').addEventListener('change', (e) => {
+                document.getElementById('chainSection').style.display = e.target.checked ? 'block' : 'none';
+                updateChain();
+            });
+
+            ['chainWeight', 'budgetSlider', 'partnerSlider'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateChain);
+            });
+        }
+
+        function drawActivationChart() {
+            const canvas = document.getElementById('activationChart');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            const w = rect.width, h = rect.height;
+            const pad = 40;
+
+            ctx.fillStyle = '#1f2940';
+            ctx.fillRect(0, 0, w, h);
+
+            // Axes
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pad, h - pad);
+            ctx.lineTo(w - pad, h - pad);
+            ctx.moveTo(pad, pad);
+            ctx.lineTo(pad, h - pad);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#888';
+            ctx.font = '12px sans-serif';
+            ctx.fillText('-5', pad - 10, h - pad + 15);
+            ctx.fillText('5', w - pad - 5, h - pad + 15);
+            ctx.fillText('0', pad - 15, h/2 + 4);
+            ctx.fillText('1', pad - 15, pad + 4);
+
+            const zRange = 10; // -5 to 5
+            const plotW = w - 2 * pad;
+            const plotH = h - 2 * pad;
+
+            // Draw all three functions
+            const functions = {
+                sigmoid: { fn: sigmoid, color: '#00d4ff' },
+                step: { fn: step, color: '#ff8c00' },
+                relu: { fn: z => Math.min(1, relu(z)/3), color: '#00ff88' }
+            };
+
+            Object.entries(functions).forEach(([name, { fn, color }]) => {
+                ctx.strokeStyle = name === activationFn ? color : color + '44';
+                ctx.lineWidth = name === activationFn ? 3 : 1;
+                ctx.beginPath();
+                for (let px = 0; px <= plotW; px++) {
+                    const z = (px / plotW) * zRange - zRange / 2;
+                    const y = fn(z);
+                    const py = (1 - y) * plotH + pad;
+                    if (px === 0) ctx.moveTo(pad + px, py);
+                    else ctx.lineTo(pad + px, py);
+                }
+                ctx.stroke();
+            });
+
+            // Current z marker
+            const currentZ = computeZ();
+            const zx = ((currentZ + 5) / 10) * plotW + pad;
+            const zy = (1 - activate(currentZ)) * plotH + pad;
+
+            ctx.beginPath();
+            ctx.arc(Math.max(pad, Math.min(w - pad, zx)), Math.max(pad, Math.min(h - pad, zy)), 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+        }
+
+        function drawSensitivity() {
+            const canvas = document.getElementById('sensitivityChart');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            const w = rect.width, h = rect.height;
+            const pad = 50;
+
+            ctx.fillStyle = '#1f2940';
+            ctx.fillRect(0, 0, w, h);
+
+            const scenario = scenarios[currentScenario];
+            const colors = ['#00d4ff', '#00ff88', '#ffd700', '#ff4466', '#ff8c00'];
+            const plotW = w - 2 * pad;
+            const plotH = h - 2 * pad;
+
+            // Axes
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pad, h - pad);
+            ctx.lineTo(w - pad, h - pad);
+            ctx.moveTo(pad, pad);
+            ctx.lineTo(pad, h - pad);
+            ctx.stroke();
+
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('0', pad - 10, h - pad + 15);
+            ctx.fillText('1', w - pad - 5, h - pad + 15);
+            ctx.fillText('0%', pad - 25, h - pad);
+            ctx.fillText('100%', pad - 35, pad + 4);
+
+            // Draw sensitivity lines
+            scenario.inputs.forEach((inp, idx) => {
+                ctx.strokeStyle = colors[idx % colors.length];
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                for (let px = 0; px <= plotW; px++) {
+                    const xVal = px / plotW;
+                    const testInputs = [...inputs];
+                    testInputs[idx] = xVal;
+                    const output = computeOutput(testInputs);
+                    const py = (1 - output) * plotH + pad;
+
+                    if (px === 0) ctx.moveTo(pad + px, py);
+                    else ctx.lineTo(pad + px, py);
+                }
+                ctx.stroke();
+
+                // Current position marker
+                const cx = inputs[idx] * plotW + pad;
+                const cy = (1 - computeOutput()) * plotH + pad;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Legend
+            scenario.inputs.forEach((inp, idx) => {
+                ctx.fillStyle = colors[idx % colors.length];
+                ctx.fillRect(w - 120, pad + idx * 18, 12, 12);
+                ctx.fillStyle = '#ccc';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(inp.name, w - 105, pad + idx * 18 + 10);
+            });
+        }
+
+        function updateChain() {
+            if (!document.getElementById('showChain').checked) return;
+
+            const chainW = parseFloat(document.getElementById('chainWeight').value);
+            const budget = parseFloat(document.getElementById('budgetSlider').value);
+            const partner = parseFloat(document.getElementById('partnerSlider').value);
+
+            document.getElementById('chainWVal').textContent = chainW.toFixed(1);
+            document.getElementById('chainWeightVal').textContent = chainW.toFixed(1);
+            document.getElementById('budgetVal').textContent = budget.toFixed(2);
+            document.getElementById('partnerVal').textContent = partner.toFixed(2);
+
+            const a1 = computeOutput();
+            const z2 = chainW * a1 + 0.5 * budget + 0.6 * partner;
+            const a2 = sigmoid(z2);
+
+            const n1 = document.getElementById('neuron1');
+            const n2 = document.getElementById('neuron2');
+
+            document.getElementById('n1Prob').textContent = Math.round(a1 * 100) + '%';
+            document.getElementById('n2Prob').textContent = Math.round(a2 * 100) + '%';
+
+            n1.className = 'chain-neuron ' + (a1 >= 0.5 ? 'go' : 'skip');
+            n2.className = 'chain-neuron ' + (a2 >= 0.5 ? 'go' : 'skip');
+        }
+
+        // ========== SCENARIOS TAB ==========
+        function setupScenarios() {
+            const grid = document.getElementById('scenarioGrid');
+            grid.innerHTML = Object.entries(scenarios).map(([key, s]) => `
+                <button class="scenario-btn ${key === currentScenario ? 'active' : ''}" data-scenario="${key}">
+                    <span class="emoji">${s.emoji}</span>
+                    <span class="name">${s.title.split('?')[0]}?</span>
+                </button>
+            `).join('');
+
+            grid.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    grid.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    loadScenario(btn.dataset.scenario);
+                });
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
