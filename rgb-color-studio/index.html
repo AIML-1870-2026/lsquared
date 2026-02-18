@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RGB Color Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -13,262 +13,113 @@
         }
 
         :root {
-            --bg-primary: #0d0d12;
-            --bg-panel: #141419;
-            --accent: #f5a623;
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-elevated: #1a1a24;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
             --border: rgba(255, 255, 255, 0.08);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-muted: rgba(255, 255, 255, 0.4);
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
-            font-family: 'DM Mono', monospace;
-            background: var(--bg-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
             color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
         }
 
-        h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
+        /* Layout */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Top Navigation */
-        .nav {
+        .header {
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 1rem 2rem;
-            background: var(--bg-panel);
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
-        .nav-title {
-            font-size: 1.5rem;
-            color: var(--accent);
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .nav-swatch {
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ef4444, #22c55e, #3b82f6);
+            border-radius: 10px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .current-color {
             display: flex;
             align-items: center;
             gap: 1rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
 
-        .current-color-preview {
-            width: 40px;
-            height: 40px;
+        .current-color-swatch {
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             border: 2px solid var(--border);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .current-color-hex {
+        .current-color-value {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
             color: var(--text-secondary);
         }
 
-        /* Main Container */
-        .container {
+        .main {
+            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            min-height: calc(100vh - 72px);
+            gap: 1px;
+            background: var(--border);
+            overflow: hidden;
         }
 
-        @media (max-width: 768px) {
-            .container {
+        @media (max-width: 900px) {
+            .main {
                 grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
             }
         }
 
-        /* Left Panel - Explorer */
-        .explorer-panel {
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            border-right: 1px solid var(--border);
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-size: 1.25rem;
-            color: var(--text-primary);
-        }
-
-        .stage-container {
-            display: flex;
-            gap: 1rem;
-            flex: 1;
-        }
-
-        .sliders-column {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1rem 0;
-        }
-
-        .slider-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .slider-label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .slider-label.red { color: #ff4444; }
-        .slider-label.green { color: #44ff44; }
-        .slider-label.blue { color: #4444ff; }
-
-        .vertical-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 120px;
-            height: 8px;
-            border-radius: 4px;
-            outline: none;
-            transform: rotate(-90deg);
-            transform-origin: center;
-            margin: 50px 0;
-        }
-
-        .vertical-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: grab;
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        .vertical-slider.red {
-            background: linear-gradient(to right, #330000, #ff0000);
-        }
-        .vertical-slider.red::-webkit-slider-thumb {
-            background: #ff4444;
-            box-shadow: 0 0 15px #ff4444;
-        }
-
-        .vertical-slider.green {
-            background: linear-gradient(to right, #003300, #00ff00);
-        }
-        .vertical-slider.green::-webkit-slider-thumb {
-            background: #44ff44;
-            box-shadow: 0 0 15px #44ff44;
-        }
-
-        .vertical-slider.blue {
-            background: linear-gradient(to right, #000033, #0000ff);
-        }
-        .vertical-slider.blue::-webkit-slider-thumb {
-            background: #4444ff;
-            box-shadow: 0 0 15px #4444ff;
-        }
-
-        .slider-value {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        .stage {
-            flex: 1;
-            position: relative;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
-        }
-
-        #spotlightCanvas {
-            width: 100%;
-            height: 100%;
-            cursor: grab;
-        }
-
-        #spotlightCanvas:active {
-            cursor: grabbing;
-        }
-
-        /* Result Display */
-        .result-display {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            padding: 1.5rem;
-            background: var(--bg-panel);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .result-swatch {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
-            50% { transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 255, 255, 0.3); }
-        }
-
-        .result-info {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .result-hex {
-            font-size: 1.5rem;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .result-rgb {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .send-to-palette-btn {
-            padding: 0.75rem 1.5rem;
-            background: var(--accent);
-            color: var(--bg-primary);
-            border: none;
-            border-radius: 8px;
-            font-family: 'DM Mono', monospace;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .send-to-palette-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(245, 166, 35, 0.3);
-        }
-
-        /* Right Panel - Palette Generator */
-        .palette-panel {
+        .panel {
+            background: var(--bg-dark);
             padding: 1.5rem;
             overflow-y: auto;
             display: flex;
@@ -276,58 +127,237 @@
             gap: 1.5rem;
         }
 
-        .color-input-section {
+        .panel-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Explorer Panel */
+        .stage-wrapper {
+            flex: 1;
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
+            min-height: 280px;
+            max-height: 400px;
+        }
+
+        .sliders {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .slider-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .slider-label {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .slider-label.red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .slider-label.green { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+        .slider-label.blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        .slider-track {
+            position: relative;
+            width: 8px;
+            height: 100px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            border-radius: 4px;
+            transition: height 0.05s ease;
+        }
+
+        .slider-fill.red { background: linear-gradient(to top, #7f1d1d, #ef4444); }
+        .slider-fill.green { background: linear-gradient(to top, #14532d, #22c55e); }
+        .slider-fill.blue { background: linear-gradient(to top, #1e3a8a, #3b82f6); }
+
+        .slider-thumb {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            transition: transform 0.1s ease;
+        }
+
+        .slider-thumb:hover {
+            transform: translateX(-50%) scale(1.15);
+        }
+
+        .slider-thumb:active {
+            cursor: grabbing;
+        }
+
+        .slider-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .stage {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(ellipse at center, #0f0f18 0%, #000 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        #spotlightCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Result Section */
+        .result-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .result-swatch {
+            width: 72px;
+            height: 72px;
+            border-radius: 14px;
+            border: 3px solid var(--border);
+            box-shadow: 0 0 30px var(--accent-glow);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .result-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-hex {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-rgb {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        .btn-ghost {
+            background: var(--bg-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        /* Palette Panel */
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
             align-items: center;
             flex-wrap: wrap;
         }
 
         .hex-input {
+            flex: 1;
+            min-width: 100px;
             padding: 0.75rem 1rem;
-            background: var(--bg-panel);
+            background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text-primary);
-            font-family: 'DM Mono', monospace;
-            font-size: 1rem;
-            width: 120px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s ease;
         }
 
         .hex-input:focus {
-            outline: none;
-            border-color: var(--accent);
+            border-color: var(--accent-primary);
         }
 
-        .color-picker-wrapper {
-            position: relative;
-            width: 40px;
-            height: 40px;
-        }
-
-        .color-picker {
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 8px;
+        .color-picker-btn {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             cursor: pointer;
+            overflow: hidden;
+            position: relative;
             background: none;
         }
 
-        .randomize-btn {
-            padding: 0.75rem 1rem;
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            border-radius: 8px;
-            font-family: 'DM Mono', monospace;
+        .color-picker-btn input {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
             cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .randomize-btn:hover {
-            background: var(--accent);
-            color: var(--bg-primary);
+            border: none;
         }
 
         /* Harmony Tabs */
@@ -338,288 +368,257 @@
         }
 
         .harmony-tab {
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.875rem;
             background: transparent;
             border: 1px solid var(--border);
+            border-radius: 8px;
             color: var(--text-secondary);
-            border-radius: 20px;
-            font-family: 'DM Mono', monospace;
+            font-family: 'Inter', sans-serif;
             font-size: 0.8rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
+        .harmony-tab:hover {
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
         .harmony-tab.active {
-            background: var(--accent);
-            color: var(--bg-primary);
-            border-color: var(--accent);
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
         }
 
-        .harmony-tab:hover:not(.active) {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* Palette Swatches */
-        .palette-swatches {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
+        /* Swatches */
+        .swatches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+            gap: 0.75rem;
         }
 
         .swatch {
-            flex: 1;
-            min-width: 100px;
-            background: var(--bg-panel);
+            background: var(--bg-card);
             border-radius: 12px;
             border: 1px solid var(--border);
             overflow: hidden;
             cursor: pointer;
-            transition: all 0.3s ease;
-            animation: swatchIn 0.3s ease forwards;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        @keyframes swatchIn {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            transition: all 0.2s ease;
         }
 
         .swatch:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
         }
 
         .swatch-color {
-            height: 80px;
+            height: 56px;
             transition: background-color 0.3s ease;
         }
 
         .swatch-info {
-            padding: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
+            padding: 0.5rem 0.625rem;
         }
 
         .swatch-hex {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        .swatch-rgb {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 0.75rem;
-            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 0.125rem;
         }
 
         .swatch-name {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
+            font-size: 0.65rem;
+            color: var(--text-muted);
             text-transform: capitalize;
         }
 
-        .swatch-badge {
-            display: inline-block;
-            padding: 0.2rem 0.4rem;
-            font-size: 0.65rem;
-            border-radius: 4px;
-            margin-top: 0.25rem;
-        }
-
-        .swatch-badge.pass {
-            background: rgba(68, 255, 68, 0.2);
-            color: #44ff44;
-        }
-
-        .swatch-badge.fail {
-            background: rgba(255, 68, 68, 0.2);
-            color: #ff4444;
-        }
-
-        /* Sample UI Preview */
-        .sample-ui {
-            background: var(--bg-panel);
+        /* Preview Card */
+        .preview-card {
+            background: var(--bg-card);
             border-radius: 12px;
             border: 1px solid var(--border);
             overflow: hidden;
         }
 
-        .sample-ui-header {
+        .preview-header {
             padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .sample-ui-title {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .sample-card {
-            padding: 1.5rem;
-            margin: 1rem;
+        .preview-content {
+            padding: 1.25rem;
             border-radius: 8px;
+            margin: 0.75rem;
             transition: all 0.3s ease;
         }
 
-        .sample-headline {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.25rem;
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 600;
             margin-bottom: 0.5rem;
         }
 
-        .sample-body {
-            font-size: 0.85rem;
+        .preview-text {
+            font-size: 0.8rem;
+            opacity: 0.85;
             margin-bottom: 1rem;
-            opacity: 0.8;
+            line-height: 1.5;
         }
 
-        .sample-button {
+        .preview-button {
             display: inline-block;
             padding: 0.5rem 1rem;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
         }
 
-        /* Accessibility Panel */
-        .accessibility-panel {
-            background: var(--bg-panel);
+        /* Accessibility Section */
+        .accordion {
+            background: var(--bg-card);
             border-radius: 12px;
             border: 1px solid var(--border);
             overflow: hidden;
         }
 
-        .accessibility-header {
-            padding: 1rem;
+        .accordion-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            padding: 1rem;
             cursor: pointer;
             transition: background 0.2s ease;
         }
 
-        .accessibility-header:hover {
-            background: rgba(255, 255, 255, 0.02);
+        .accordion-header:hover {
+            background: var(--bg-elevated);
         }
 
-        .accessibility-title {
-            font-size: 1rem;
+        .accordion-title {
+            font-size: 0.875rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .collapse-icon {
+        .accordion-icon {
             transition: transform 0.3s ease;
+            color: var(--text-muted);
         }
 
-        .accessibility-header.collapsed .collapse-icon {
-            transform: rotate(-90deg);
+        .accordion.open .accordion-icon {
+            transform: rotate(180deg);
         }
 
-        .accessibility-content {
-            padding: 1rem;
-            border-top: 1px solid var(--border);
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion.open .accordion-content {
+            max-height: 600px;
+        }
+
+        .accordion-inner {
+            padding: 0 1rem 1rem;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            max-height: 1000px;
-            overflow: hidden;
-            transition: all 0.3s ease;
+            gap: 1.25rem;
         }
 
-        .accessibility-content.collapsed {
-            max-height: 0;
-            padding: 0 1rem;
-            border-top: none;
-        }
-
-        .accessibility-section {
+        .tool-section {
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
         }
 
-        .accessibility-section-title {
-            font-size: 0.85rem;
-            color: var(--accent);
+        .tool-label {
+            font-size: 0.7rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.08em;
+            color: var(--accent-primary);
         }
 
         /* Contrast Checker */
-        .contrast-inputs {
+        .contrast-row {
             display: flex;
-            gap: 1rem;
             align-items: center;
+            gap: 0.75rem;
             flex-wrap: wrap;
         }
 
-        .contrast-color-input {
+        .contrast-input {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .contrast-color-input input[type="color"] {
-            width: 36px;
-            height: 36px;
+        .contrast-input input[type="color"] {
+            width: 32px;
+            height: 32px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
+            background: none;
         }
 
-        .contrast-color-input input[type="text"] {
-            width: 80px;
-            padding: 0.5rem;
-            background: var(--bg-primary);
+        .contrast-input input[type="text"] {
+            width: 75px;
+            padding: 0.4rem 0.5rem;
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
             border-radius: 6px;
             color: var(--text-primary);
-            font-family: 'DM Mono', monospace;
-            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
         }
 
         .contrast-result {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             flex-wrap: wrap;
         }
 
         .contrast-ratio {
-            font-size: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: var(--text-primary);
         }
 
         .contrast-badges {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.375rem;
             flex-wrap: wrap;
         }
 
-        .contrast-badge {
+        .badge {
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 500;
+            font-size: 0.65rem;
+            font-weight: 600;
         }
 
-        .contrast-badge.pass {
-            background: rgba(68, 255, 68, 0.15);
-            color: #44ff44;
+        .badge.pass {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
         }
 
-        .contrast-badge.fail {
-            background: rgba(255, 68, 68, 0.15);
-            color: #ff4444;
+        .badge.fail {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
         }
 
-        /* Color Blindness Simulator */
+        /* Color Blindness */
         .cb-buttons {
             display: flex;
             gap: 0.5rem;
@@ -627,305 +626,272 @@
         }
 
         .cb-btn {
-            padding: 0.5rem 1rem;
-            background: transparent;
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-elevated);
             border: 1px solid var(--border);
-            color: var(--text-secondary);
             border-radius: 6px;
-            font-family: 'DM Mono', monospace;
+            color: var(--text-secondary);
             font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
+        .cb-btn:hover {
+            border-color: var(--accent-primary);
+        }
+
         .cb-btn.active {
-            background: var(--accent);
-            color: var(--bg-primary);
-            border-color: var(--accent);
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
         }
 
-        .cb-btn:hover:not(.active) {
-            border-color: var(--accent);
-        }
-
-        .simulated-palette {
+        .simulated-swatches {
             display: flex;
             gap: 0.5rem;
             flex-wrap: wrap;
         }
 
-        .simulated-swatch {
-            width: 50px;
-            height: 50px;
+        .sim-swatch {
+            width: 40px;
+            height: 40px;
             border-radius: 8px;
             border: 1px solid var(--border);
         }
 
-        /* Accessible Mode Toggle */
-        .accessible-mode {
+        /* Toggle */
+        .toggle-row {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: var(--bg-primary);
-            border-radius: 13px;
+        .toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--bg-elevated);
+            border-radius: 12px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            position: relative;
+            transition: background 0.2s ease;
             border: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
-        .toggle-switch.active {
-            background: var(--accent);
+        .toggle.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
         }
 
-        .toggle-switch::after {
+        .toggle::after {
             content: '';
             position: absolute;
-            top: 3px;
-            left: 3px;
+            top: 2px;
+            left: 2px;
             width: 18px;
             height: 18px;
-            background: var(--text-primary);
+            background: white;
             border-radius: 50%;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
 
-        .toggle-switch.active::after {
-            transform: translateX(24px);
+        .toggle.active::after {
+            transform: translateX(20px);
         }
 
         .toggle-label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
         }
 
-        /* Toast Notification */
+        /* Toast */
         .toast {
             position: fixed;
             bottom: 2rem;
             left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--accent);
-            color: var(--bg-primary);
+            transform: translateX(-50%) translateY(80px);
+            background: var(--accent-primary);
+            color: white;
             padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 0.875rem;
             font-weight: 500;
             opacity: 0;
             transition: all 0.3s ease;
             z-index: 1000;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
         }
 
         .toast.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
-
-        /* Particles */
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            pointer-events: none;
-            animation: particleRise 2s ease-out forwards;
-        }
-
-        @keyframes particleRise {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100px) scale(0);
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav">
-        <h1 class="nav-title">RGB Color Studio</h1>
-        <div class="nav-swatch">
-            <div class="current-color-preview" id="navColorPreview"></div>
-            <span class="current-color-hex" id="navColorHex">#FFFFFF</span>
-        </div>
-    </nav>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Left Panel - Explorer -->
-        <div class="explorer-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">Light Explorer</h2>
+    <div class="app">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span class="logo-text">RGB Color Studio</span>
             </div>
-
-            <div class="stage-container">
-                <div class="sliders-column">
-                    <div class="slider-group">
-                        <span class="slider-label red">R</span>
-                        <input type="range" class="vertical-slider red" id="redSlider" min="0" max="255" value="255">
-                        <span class="slider-value" id="redValue">255</span>
-                    </div>
-                    <div class="slider-group">
-                        <span class="slider-label green">G</span>
-                        <input type="range" class="vertical-slider green" id="greenSlider" min="0" max="255" value="128">
-                        <span class="slider-value" id="greenValue">128</span>
-                    </div>
-                    <div class="slider-group">
-                        <span class="slider-label blue">B</span>
-                        <input type="range" class="vertical-slider blue" id="blueSlider" min="0" max="255" value="64">
-                        <span class="slider-value" id="blueValue">64</span>
-                    </div>
-                </div>
-
-                <div class="stage" id="stage">
-                    <canvas id="spotlightCanvas"></canvas>
-                </div>
+            <div class="current-color">
+                <div class="current-color-swatch" id="headerSwatch"></div>
+                <span class="current-color-value" id="headerHex">#FFFFFF</span>
             </div>
+        </header>
 
-            <div class="result-display">
-                <div class="result-swatch" id="resultSwatch"></div>
-                <div class="result-info">
-                    <span class="result-hex" id="resultHex">#FFFFFF</span>
-                    <span class="result-rgb" id="resultRgb">RGB(255, 255, 255)</span>
-                </div>
-                <button class="send-to-palette-btn" id="sendToPalette">Send to Palette →</button>
-            </div>
-        </div>
+        <main class="main">
+            <!-- Explorer Panel -->
+            <div class="panel">
+                <div class="panel-title">Light Mixer</div>
 
-        <!-- Right Panel - Palette Generator -->
-        <div class="palette-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">Palette Generator</h2>
-            </div>
-
-            <div class="color-input-section">
-                <input type="text" class="hex-input" id="hexInput" placeholder="#FFFFFF" maxlength="7">
-                <div class="color-picker-wrapper">
-                    <input type="color" class="color-picker" id="colorPicker" value="#ffffff">
-                </div>
-                <button class="randomize-btn" id="randomizeBtn">🎲 Randomize</button>
-            </div>
-
-            <div class="harmony-tabs" id="harmonyTabs">
-                <button class="harmony-tab active" data-harmony="complementary">Complementary</button>
-                <button class="harmony-tab" data-harmony="analogous">Analogous</button>
-                <button class="harmony-tab" data-harmony="triadic">Triadic</button>
-                <button class="harmony-tab" data-harmony="split-complementary">Split-Comp</button>
-                <button class="harmony-tab" data-harmony="tetradic">Tetradic</button>
-            </div>
-
-            <div class="palette-swatches" id="paletteSwatches"></div>
-
-            <!-- Sample UI Preview -->
-            <div class="sample-ui">
-                <div class="sample-ui-header">
-                    <span class="sample-ui-title">Sample UI Preview</span>
-                </div>
-                <div class="sample-card" id="sampleCard">
-                    <h3 class="sample-headline">Welcome to Our App</h3>
-                    <p class="sample-body">This is how your color palette might look in a real interface. The colors adapt based on your selection.</p>
-                    <span class="sample-button">Get Started</span>
-                </div>
-            </div>
-
-            <!-- Accessibility Panel -->
-            <div class="accessibility-panel">
-                <div class="accessibility-header" id="accessibilityHeader">
-                    <h3 class="accessibility-title">
-                        <span class="collapse-icon">▼</span>
-                        Accessibility Tools
-                    </h3>
-                </div>
-                <div class="accessibility-content" id="accessibilityContent">
-                    <!-- Contrast Checker -->
-                    <div class="accessibility-section">
-                        <h4 class="accessibility-section-title">Contrast Checker</h4>
-                        <div class="contrast-inputs">
-                            <div class="contrast-color-input">
-                                <input type="color" id="contrastColor1" value="#ffffff">
-                                <input type="text" id="contrastHex1" value="#FFFFFF">
+                <div class="stage-wrapper">
+                    <div class="sliders">
+                        <div class="slider-item">
+                            <div class="slider-label red">R</div>
+                            <div class="slider-track" data-color="red">
+                                <div class="slider-fill red" id="redFill"></div>
+                                <div class="slider-thumb" id="redThumb"></div>
                             </div>
-                            <span style="color: var(--text-muted);">vs</span>
-                            <div class="contrast-color-input">
-                                <input type="color" id="contrastColor2" value="#000000">
-                                <input type="text" id="contrastHex2" value="#000000">
-                            </div>
+                            <div class="slider-value" id="redValue">255</div>
                         </div>
-                        <div class="contrast-result">
-                            <span class="contrast-ratio" id="contrastRatio">21:1</span>
-                            <div class="contrast-badges" id="contrastBadges">
-                                <span class="contrast-badge pass">AA Normal ✓</span>
-                                <span class="contrast-badge pass">AA Large ✓</span>
-                                <span class="contrast-badge pass">AAA Normal ✓</span>
-                                <span class="contrast-badge pass">AAA Large ✓</span>
+                        <div class="slider-item">
+                            <div class="slider-label green">G</div>
+                            <div class="slider-track" data-color="green">
+                                <div class="slider-fill green" id="greenFill"></div>
+                                <div class="slider-thumb" id="greenThumb"></div>
                             </div>
+                            <div class="slider-value" id="greenValue">128</div>
+                        </div>
+                        <div class="slider-item">
+                            <div class="slider-label blue">B</div>
+                            <div class="slider-track" data-color="blue">
+                                <div class="slider-fill blue" id="blueFill"></div>
+                                <div class="slider-thumb" id="blueThumb"></div>
+                            </div>
+                            <div class="slider-value" id="blueValue">64</div>
                         </div>
                     </div>
 
-                    <!-- Color Blindness Simulator -->
-                    <div class="accessibility-section">
-                        <h4 class="accessibility-section-title">Color Blindness Simulator</h4>
-                        <div class="cb-buttons">
-                            <button class="cb-btn" data-type="normal">Normal</button>
-                            <button class="cb-btn" data-type="protanopia">Protanopia</button>
-                            <button class="cb-btn" data-type="deuteranopia">Deuteranopia</button>
-                            <button class="cb-btn" data-type="tritanopia">Tritanopia</button>
-                        </div>
-                        <div class="simulated-palette" id="simulatedPalette"></div>
+                    <div class="stage">
+                        <canvas id="spotlightCanvas"></canvas>
                     </div>
+                </div>
 
-                    <!-- Accessible Palette Mode -->
-                    <div class="accessibility-section">
-                        <h4 class="accessibility-section-title">Accessible Palette Mode</h4>
-                        <div class="accessible-mode">
-                            <div class="toggle-switch" id="accessibleToggle"></div>
-                            <span class="toggle-label">Enforce 4.5:1 minimum contrast</span>
+                <div class="result-section">
+                    <div class="result-swatch" id="resultSwatch"></div>
+                    <div class="result-info">
+                        <div class="result-hex" id="resultHex">#FF8040</div>
+                        <div class="result-rgb" id="resultRgb">rgb(255, 128, 64)</div>
+                    </div>
+                    <button class="btn btn-primary" id="sendToPalette">Use in Palette</button>
+                </div>
+            </div>
+
+            <!-- Palette Panel -->
+            <div class="panel">
+                <div class="panel-title">Palette Generator</div>
+
+                <div class="input-row">
+                    <input type="text" class="hex-input" id="hexInput" placeholder="#FF8040" maxlength="7">
+                    <div class="color-picker-btn">
+                        <input type="color" id="colorPicker" value="#ff8040">
+                    </div>
+                    <button class="btn btn-ghost" id="randomBtn">Randomize</button>
+                </div>
+
+                <div class="harmony-tabs">
+                    <button class="harmony-tab active" data-type="complementary">Complementary</button>
+                    <button class="harmony-tab" data-type="analogous">Analogous</button>
+                    <button class="harmony-tab" data-type="triadic">Triadic</button>
+                    <button class="harmony-tab" data-type="split">Split-Comp</button>
+                    <button class="harmony-tab" data-type="tetradic">Tetradic</button>
+                </div>
+
+                <div class="swatches-grid" id="swatches"></div>
+
+                <div class="preview-card">
+                    <div class="preview-header">UI Preview</div>
+                    <div class="preview-content" id="previewContent">
+                        <div class="preview-title">Welcome Back</div>
+                        <div class="preview-text">See how your palette looks in a real interface design.</div>
+                        <span class="preview-button">Get Started</span>
+                    </div>
+                </div>
+
+                <div class="accordion" id="accessibilityAccordion">
+                    <div class="accordion-header">
+                        <span class="accordion-title">
+                            <svg class="accordion-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                            Accessibility Tools
+                        </span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div class="tool-section">
+                                <div class="tool-label">Contrast Checker</div>
+                                <div class="contrast-row">
+                                    <div class="contrast-input">
+                                        <input type="color" id="contrast1" value="#ffffff">
+                                        <input type="text" id="contrastHex1" value="#FFFFFF">
+                                    </div>
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">vs</span>
+                                    <div class="contrast-input">
+                                        <input type="color" id="contrast2" value="#000000">
+                                        <input type="text" id="contrastHex2" value="#000000">
+                                    </div>
+                                </div>
+                                <div class="contrast-result">
+                                    <span class="contrast-ratio" id="contrastRatio">21:1</span>
+                                    <div class="contrast-badges" id="contrastBadges"></div>
+                                </div>
+                            </div>
+
+                            <div class="tool-section">
+                                <div class="tool-label">Color Blindness Preview</div>
+                                <div class="cb-buttons">
+                                    <button class="cb-btn active" data-type="normal">Normal</button>
+                                    <button class="cb-btn" data-type="protanopia">Protanopia</button>
+                                    <button class="cb-btn" data-type="deuteranopia">Deuteranopia</button>
+                                    <button class="cb-btn" data-type="tritanopia">Tritanopia</button>
+                                </div>
+                                <div class="simulated-swatches" id="simSwatches"></div>
+                            </div>
+
+                            <div class="tool-section">
+                                <div class="tool-label">Accessible Mode</div>
+                                <div class="toggle-row">
+                                    <div class="toggle" id="accessibleToggle"></div>
+                                    <span class="toggle-label">Enforce 4.5:1 contrast ratio</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast">Copied!</div>
 
     <script>
-        // ===================
-        // Color Utility Functions
-        // ===================
+        // ============ Color Utilities ============
+        const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => Math.round(Math.min(255, Math.max(0, x))).toString(16).padStart(2, '0')).join('').toUpperCase();
 
-        function rgbToHex(r, g, b) {
-            return '#' + [r, g, b].map(x => {
-                const hex = Math.round(x).toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            }).join('').toUpperCase();
-        }
-
-        function hexToRgb(hex) {
+        const hexToRgb = hex => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? {
-                r: parseInt(result[1], 16),
-                g: parseInt(result[2], 16),
-                b: parseInt(result[3], 16)
-            } : null;
-        }
+            return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+        };
 
-        function rgbToHsl(r, g, b) {
+        const rgbToHsl = (r, g, b) => {
             r /= 255; g /= 255; b /= 255;
             const max = Math.max(r, g, b), min = Math.min(r, g, b);
             let h, s, l = (max + min) / 2;
-
-            if (max === min) {
-                h = s = 0;
-            } else {
+            if (max === min) { h = s = 0; }
+            else {
                 const d = max - min;
                 s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
                 switch (max) {
@@ -935,15 +901,13 @@
                 }
             }
             return { h: h * 360, s: s * 100, l: l * 100 };
-        }
+        };
 
-        function hslToRgb(h, s, l) {
+        const hslToRgb = (h, s, l) => {
             h /= 360; s /= 100; l /= 100;
             let r, g, b;
-
-            if (s === 0) {
-                r = g = b = l;
-            } else {
+            if (s === 0) { r = g = b = l; }
+            else {
                 const hue2rgb = (p, q, t) => {
                     if (t < 0) t += 1;
                     if (t > 1) t -= 1;
@@ -959,190 +923,127 @@
                 b = hue2rgb(p, q, h - 1/3);
             }
             return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
-        }
+        };
 
-        function getColorName(h, s, l) {
-            const hueNames = [
-                [0, 'Red'], [30, 'Orange'], [60, 'Yellow'], [90, 'Lime'],
-                [120, 'Green'], [150, 'Teal'], [180, 'Cyan'], [210, 'Sky'],
-                [240, 'Blue'], [270, 'Purple'], [300, 'Magenta'], [330, 'Rose'], [360, 'Red']
-            ];
-
-            if (s < 10) {
-                if (l < 20) return 'Black';
-                if (l > 80) return 'White';
-                return 'Gray';
+        const getColorName = (h, s, l) => {
+            if (s < 10) return l < 20 ? 'Black' : l > 80 ? 'White' : 'Gray';
+            const names = [[15, 'Red'], [45, 'Orange'], [75, 'Yellow'], [105, 'Lime'], [135, 'Green'],
+                          [165, 'Teal'], [195, 'Cyan'], [225, 'Sky'], [255, 'Blue'], [285, 'Purple'],
+                          [315, 'Magenta'], [345, 'Rose'], [360, 'Red']];
+            let name = 'Color';
+            for (let i = 0; i < names.length - 1; i++) {
+                if (h < names[i][0]) { name = i === 0 ? 'Red' : names[i-1][1]; break; }
+                name = names[i][1];
             }
+            return (l < 35 ? 'Dark ' : l > 65 ? 'Light ' : '') + name;
+        };
 
-            let hueName = 'Color';
-            for (let i = 0; i < hueNames.length - 1; i++) {
-                if (h >= hueNames[i][0] && h < hueNames[i + 1][0]) {
-                    hueName = hueNames[i][1];
-                    break;
-                }
-            }
-
-            let prefix = '';
-            if (l < 30) prefix = 'Dark ';
-            else if (l > 70) prefix = 'Light ';
-
-            if (s < 50 && s >= 10) prefix = 'Muted ' + prefix;
-
-            return prefix + hueName;
-        }
-
-        // ===================
-        // Contrast & Accessibility
-        // ===================
-
-        function getLuminance(r, g, b) {
+        // ============ Contrast & Accessibility ============
+        const getLuminance = (r, g, b) => {
             const [rs, gs, bs] = [r, g, b].map(c => {
                 c /= 255;
                 return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
             });
             return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
-        }
-
-        function getContrastRatio(rgb1, rgb2) {
-            const l1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
-            const l2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
-            const lighter = Math.max(l1, l2);
-            const darker = Math.min(l1, l2);
-            return (lighter + 0.05) / (darker + 0.05);
-        }
-
-        // Color blindness simulation matrices
-        const cbMatrices = {
-            protanopia: [
-                [0.567, 0.433, 0],
-                [0.558, 0.442, 0],
-                [0, 0.242, 0.758]
-            ],
-            deuteranopia: [
-                [0.625, 0.375, 0],
-                [0.7, 0.3, 0],
-                [0, 0.3, 0.7]
-            ],
-            tritanopia: [
-                [0.95, 0.05, 0],
-                [0, 0.433, 0.567],
-                [0, 0.475, 0.525]
-            ]
         };
 
-        function simulateColorBlindness(rgb, type) {
+        const getContrastRatio = (c1, c2) => {
+            const l1 = getLuminance(c1.r, c1.g, c1.b);
+            const l2 = getLuminance(c2.r, c2.g, c2.b);
+            return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+        };
+
+        const cbMatrices = {
+            protanopia: [[0.567, 0.433, 0], [0.558, 0.442, 0], [0, 0.242, 0.758]],
+            deuteranopia: [[0.625, 0.375, 0], [0.7, 0.3, 0], [0, 0.3, 0.7]],
+            tritanopia: [[0.95, 0.05, 0], [0, 0.433, 0.567], [0, 0.475, 0.525]]
+        };
+
+        const simulateCB = (rgb, type) => {
             if (type === 'normal') return rgb;
-            const matrix = cbMatrices[type];
+            const m = cbMatrices[type];
             return {
-                r: Math.round(matrix[0][0] * rgb.r + matrix[0][1] * rgb.g + matrix[0][2] * rgb.b),
-                g: Math.round(matrix[1][0] * rgb.r + matrix[1][1] * rgb.g + matrix[1][2] * rgb.b),
-                b: Math.round(matrix[2][0] * rgb.r + matrix[2][1] * rgb.g + matrix[2][2] * rgb.b)
+                r: Math.min(255, Math.max(0, Math.round(m[0][0] * rgb.r + m[0][1] * rgb.g + m[0][2] * rgb.b))),
+                g: Math.min(255, Math.max(0, Math.round(m[1][0] * rgb.r + m[1][1] * rgb.g + m[1][2] * rgb.b))),
+                b: Math.min(255, Math.max(0, Math.round(m[2][0] * rgb.r + m[2][1] * rgb.g + m[2][2] * rgb.b)))
             };
-        }
+        };
 
-        // ===================
-        // Palette Generation
-        // ===================
-
-        function generatePalette(baseColor, harmonyType) {
-            const hsl = rgbToHsl(baseColor.r, baseColor.g, baseColor.b);
-            let colors = [];
-
-            switch (harmonyType) {
-                case 'complementary':
-                    colors = [
-                        hsl,
-                        { h: (hsl.h + 180) % 360, s: hsl.s, l: hsl.l }
-                    ];
-                    break;
-                case 'analogous':
-                    colors = [
-                        { h: (hsl.h - 30 + 360) % 360, s: hsl.s, l: hsl.l },
-                        hsl,
-                        { h: (hsl.h + 30) % 360, s: hsl.s, l: hsl.l }
-                    ];
-                    break;
-                case 'triadic':
-                    colors = [
-                        hsl,
-                        { h: (hsl.h + 120) % 360, s: hsl.s, l: hsl.l },
-                        { h: (hsl.h + 240) % 360, s: hsl.s, l: hsl.l }
-                    ];
-                    break;
-                case 'split-complementary':
-                    colors = [
-                        hsl,
-                        { h: (hsl.h + 150) % 360, s: hsl.s, l: hsl.l },
-                        { h: (hsl.h + 210) % 360, s: hsl.s, l: hsl.l }
-                    ];
-                    break;
-                case 'tetradic':
-                    colors = [
-                        hsl,
-                        { h: (hsl.h + 90) % 360, s: hsl.s, l: hsl.l },
-                        { h: (hsl.h + 180) % 360, s: hsl.s, l: hsl.l },
-                        { h: (hsl.h + 270) % 360, s: hsl.s, l: hsl.l }
-                    ];
-                    break;
+        // ============ Palette Generation ============
+        const generatePalette = (base, type) => {
+            const hsl = rgbToHsl(base.r, base.g, base.b);
+            let angles;
+            switch (type) {
+                case 'complementary': angles = [0, 180]; break;
+                case 'analogous': angles = [-30, 0, 30]; break;
+                case 'triadic': angles = [0, 120, 240]; break;
+                case 'split': angles = [0, 150, 210]; break;
+                case 'tetradic': angles = [0, 90, 180, 270]; break;
+                default: angles = [0];
             }
-
-            return colors.map(c => {
-                const rgb = hslToRgb(c.h, c.s, c.l);
-                return {
-                    ...rgb,
-                    hex: rgbToHex(rgb.r, rgb.g, rgb.b),
-                    name: getColorName(c.h, c.s, c.l),
-                    hsl: c
-                };
+            return angles.map(a => {
+                const h = (hsl.h + a + 360) % 360;
+                const rgb = hslToRgb(h, hsl.s, hsl.l);
+                return { ...rgb, hex: rgbToHex(rgb.r, rgb.g, rgb.b), name: getColorName(h, hsl.s, hsl.l) };
             });
-        }
+        };
 
-        // ===================
-        // Canvas Spotlight System
-        // ===================
-
-        const canvas = document.getElementById('spotlightCanvas');
-        const ctx = canvas.getContext('2d');
-        const stage = document.getElementById('stage');
+        // ============ State ============
+        let state = {
+            r: 255, g: 128, b: 64,
+            palette: [],
+            harmonyType: 'complementary',
+            cbType: 'normal',
+            accessibleMode: false
+        };
 
         let spotlights = [
-            { x: 0.3, y: 0.3, color: 'red', intensity: 255, phase: 0 },
-            { x: 0.5, y: 0.6, color: 'green', intensity: 128, phase: 2 },
-            { x: 0.7, y: 0.35, color: 'blue', intensity: 64, phase: 4 }
+            { x: 0.25, y: 0.3 },
+            { x: 0.5, y: 0.65 },
+            { x: 0.75, y: 0.35 }
         ];
 
-        let draggedSpotlight = null;
-        let particles = [];
-        let animationFrame;
+        let draggedSpot = null;
+        let canvasWidth = 0;
+        let canvasHeight = 0;
 
-        function resizeCanvas() {
+        // ============ Canvas ============
+        const canvas = document.getElementById('spotlightCanvas');
+        const ctx = canvas.getContext('2d');
+        const stage = canvas.parentElement;
+
+        const resizeCanvas = () => {
             const rect = stage.getBoundingClientRect();
-            canvas.width = rect.width * window.devicePixelRatio;
-            canvas.height = rect.height * window.devicePixelRatio;
+            const dpr = window.devicePixelRatio || 1;
+            canvasWidth = rect.width;
+            canvasHeight = rect.height;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
             canvas.style.width = rect.width + 'px';
             canvas.style.height = rect.height + 'px';
-            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        };
 
-        function drawSpotlights(time) {
-            const rect = stage.getBoundingClientRect();
-            ctx.clearRect(0, 0, rect.width, rect.height);
+        const drawSpotlights = () => {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             ctx.globalCompositeOperation = 'screen';
 
-            spotlights.forEach((spot, index) => {
-                const pulse = 1 + Math.sin(time / 1000 + spot.phase) * 0.05;
-                const radius = (rect.width * 0.25) * pulse * (spot.intensity / 255);
-                const x = spot.x * rect.width;
-                const y = spot.y * rect.height;
+            const colors = [
+                { r: state.r, g: 0, b: 0 },
+                { r: 0, g: state.g, b: 0 },
+                { r: 0, g: 0, b: state.b }
+            ];
 
-                const colors = {
-                    red: `rgba(255, 0, 0, ${spot.intensity / 255})`,
-                    green: `rgba(0, 255, 0, ${spot.intensity / 255})`,
-                    blue: `rgba(0, 0, 255, ${spot.intensity / 255})`
-                };
+            spotlights.forEach((spot, i) => {
+                const x = spot.x * canvasWidth;
+                const y = spot.y * canvasHeight;
+                const intensity = [state.r, state.g, state.b][i] / 255;
+                const radius = Math.min(canvasWidth, canvasHeight) * 0.35 * Math.max(0.1, intensity);
 
                 const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-                gradient.addColorStop(0, colors[spot.color]);
+                const c = colors[i];
+                gradient.addColorStop(0, `rgba(${c.r}, ${c.g}, ${c.b}, 1)`);
+                gradient.addColorStop(0.4, `rgba(${c.r}, ${c.g}, ${c.b}, 0.6)`);
                 gradient.addColorStop(1, 'transparent');
 
                 ctx.beginPath();
@@ -1150,147 +1051,199 @@
                 ctx.fillStyle = gradient;
                 ctx.fill();
             });
+        };
 
-            // Draw particles
-            ctx.globalCompositeOperation = 'source-over';
-            particles.forEach((p, i) => {
-                p.y -= p.speed;
-                p.life -= 0.02;
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                } else {
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${p.color}, ${p.life})`;
-                    ctx.fill();
-                }
+        // ============ UI Updates ============
+        const updateSliders = () => {
+            ['red', 'green', 'blue'].forEach((c, i) => {
+                const val = [state.r, state.g, state.b][i];
+                const pct = val / 255 * 100;
+                document.getElementById(`${c}Fill`).style.height = pct + '%';
+                document.getElementById(`${c}Thumb`).style.bottom = `calc(${pct}% - 10px)`;
+                document.getElementById(`${c}Value`).textContent = val;
+            });
+        };
+
+        const updateDisplay = () => {
+            const hex = rgbToHex(state.r, state.g, state.b);
+            document.getElementById('resultSwatch').style.backgroundColor = hex;
+            document.getElementById('resultHex').textContent = hex;
+            document.getElementById('resultRgb').textContent = `rgb(${state.r}, ${state.g}, ${state.b})`;
+            document.getElementById('headerSwatch').style.backgroundColor = hex;
+            document.getElementById('headerHex').textContent = hex;
+        };
+
+        const updatePalette = () => {
+            const hex = document.getElementById('hexInput').value || '#FF8040';
+            const rgb = hexToRgb(hex);
+            if (!rgb) return;
+
+            state.palette = generatePalette(rgb, state.harmonyType);
+            renderSwatches();
+            updatePreview();
+            updateContrast();
+            updateCBSimulation();
+        };
+
+        const renderSwatches = () => {
+            const container = document.getElementById('swatches');
+            container.innerHTML = state.palette.map((c, i) => `
+                <div class="swatch" data-hex="${c.hex}">
+                    <div class="swatch-color" style="background: ${c.hex}"></div>
+                    <div class="swatch-info">
+                        <div class="swatch-hex">${c.hex}</div>
+                        <div class="swatch-name">${c.name}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.swatch').forEach(s => {
+                s.addEventListener('click', () => {
+                    navigator.clipboard.writeText(s.dataset.hex);
+                    showToast('Copied ' + s.dataset.hex);
+                });
+            });
+        };
+
+        const updatePreview = () => {
+            if (state.palette.length < 2) return;
+            const preview = document.getElementById('previewContent');
+            const bg = state.palette[0];
+            const text = state.palette[1];
+
+            preview.style.backgroundColor = bg.hex;
+            preview.querySelector('.preview-title').style.color = text.hex;
+            preview.querySelector('.preview-text').style.color = text.hex;
+            const button = preview.querySelector('.preview-button');
+            button.style.backgroundColor = text.hex;
+            button.style.color = bg.hex;
+        };
+
+        const updateContrast = () => {
+            const hex1 = document.getElementById('contrastHex1').value;
+            const hex2 = document.getElementById('contrastHex2').value;
+            const c1 = hexToRgb(hex1), c2 = hexToRgb(hex2);
+            if (!c1 || !c2) return;
+
+            const ratio = getContrastRatio(c1, c2);
+            document.getElementById('contrastRatio').textContent = ratio.toFixed(2) + ':1';
+            document.getElementById('contrastBadges').innerHTML = [
+                ['AA', 4.5], ['AA Large', 3], ['AAA', 7], ['AAA Large', 4.5]
+            ].map(([label, min]) =>
+                `<span class="badge ${ratio >= min ? 'pass' : 'fail'}">${label} ${ratio >= min ? '✓' : '✗'}</span>`
+            ).join('');
+        };
+
+        const updateCBSimulation = () => {
+            const container = document.getElementById('simSwatches');
+            container.innerHTML = state.palette.map(c => {
+                const sim = simulateCB(c, state.cbType);
+                return `<div class="sim-swatch" style="background: ${rgbToHex(sim.r, sim.g, sim.b)}" title="${c.hex}"></div>`;
+            }).join('');
+        };
+
+        const showToast = msg => {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        };
+
+        // ============ Event Handlers ============
+        // Sliders
+        document.querySelectorAll('.slider-track').forEach(track => {
+            const color = track.dataset.color;
+
+            const updateFromY = (y, rect) => {
+                const pct = Math.max(0, Math.min(1, 1 - (y - rect.top) / rect.height));
+                const val = Math.round(pct * 255);
+                if (color === 'red') state.r = val;
+                else if (color === 'green') state.g = val;
+                else state.b = val;
+                updateSliders();
+                updateDisplay();
+                drawSpotlights();
+            };
+
+            const onMove = e => {
+                e.preventDefault();
+                const rect = track.getBoundingClientRect();
+                const y = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+                updateFromY(y, rect);
+            };
+
+            const onUp = () => {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onUp);
+            };
+
+            track.addEventListener('mousedown', e => {
+                onMove(e);
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
             });
 
-            updateMixedColor();
-        }
+            track.addEventListener('touchstart', e => {
+                onMove(e);
+                document.addEventListener('touchmove', onMove, { passive: false });
+                document.addEventListener('touchend', onUp);
+            }, { passive: false });
+        });
 
-        function addParticle() {
-            const rect = stage.getBoundingClientRect();
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-
-            particles.push({
-                x: centerX + (Math.random() - 0.5) * 50,
-                y: centerY,
-                speed: 0.5 + Math.random() * 1,
-                life: 1,
-                color: `${spotlights[0].intensity}, ${spotlights[1].intensity}, ${spotlights[2].intensity}`
-            });
-        }
-
-        function animate(time) {
-            resizeCanvas();
-            drawSpotlights(time);
-
-            if (Math.random() < 0.1) addParticle();
-
-            animationFrame = requestAnimationFrame(animate);
-        }
-
-        // Mouse/touch interaction
-        canvas.addEventListener('mousedown', (e) => {
-            const rect = stage.getBoundingClientRect();
+        // Canvas dragging
+        canvas.addEventListener('mousedown', e => {
+            const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width;
             const y = (e.clientY - rect.top) / rect.height;
 
-            spotlights.forEach((spot, index) => {
-                const dx = x - spot.x;
-                const dy = y - spot.y;
-                if (Math.sqrt(dx * dx + dy * dy) < 0.15) {
-                    draggedSpotlight = index;
-                }
+            spotlights.forEach((s, i) => {
+                if (Math.hypot(x - s.x, y - s.y) < 0.12) draggedSpot = i;
             });
         });
 
-        canvas.addEventListener('mousemove', (e) => {
-            if (draggedSpotlight !== null) {
-                const rect = stage.getBoundingClientRect();
-                spotlights[draggedSpotlight].x = Math.max(0.1, Math.min(0.9, (e.clientX - rect.left) / rect.width));
-                spotlights[draggedSpotlight].y = Math.max(0.1, Math.min(0.9, (e.clientY - rect.top) / rect.height));
-            }
+        canvas.addEventListener('mousemove', e => {
+            if (draggedSpot === null) return;
+            const rect = canvas.getBoundingClientRect();
+            spotlights[draggedSpot].x = Math.max(0.1, Math.min(0.9, (e.clientX - rect.left) / rect.width));
+            spotlights[draggedSpot].y = Math.max(0.1, Math.min(0.9, (e.clientY - rect.top) / rect.height));
+            drawSpotlights();
         });
 
-        canvas.addEventListener('mouseup', () => { draggedSpotlight = null; });
-        canvas.addEventListener('mouseleave', () => { draggedSpotlight = null; });
+        canvas.addEventListener('mouseup', () => draggedSpot = null);
+        canvas.addEventListener('mouseleave', () => draggedSpot = null);
 
-        // ===================
-        // UI State & Updates
-        // ===================
-
-        let currentMixedColor = { r: 255, g: 255, b: 255 };
-        let currentHarmony = 'complementary';
-        let currentPalette = [];
-        let accessibleMode = false;
-        let cbType = 'normal';
-
-        function updateMixedColor() {
-            const r = spotlights[0].intensity;
-            const g = spotlights[1].intensity;
-            const b = spotlights[2].intensity;
-
-            currentMixedColor = { r, g, b };
-            const hex = rgbToHex(r, g, b);
-
-            document.getElementById('resultSwatch').style.backgroundColor = hex;
-            document.getElementById('resultHex').textContent = hex;
-            document.getElementById('resultRgb').textContent = `RGB(${r}, ${g}, ${b})`;
-            document.getElementById('navColorPreview').style.backgroundColor = hex;
-            document.getElementById('navColorHex').textContent = hex;
-        }
-
-        function updateSliderValues() {
-            document.getElementById('redValue').textContent = spotlights[0].intensity;
-            document.getElementById('greenValue').textContent = spotlights[1].intensity;
-            document.getElementById('blueValue').textContent = spotlights[2].intensity;
-        }
-
-        // Sliders
-        document.getElementById('redSlider').addEventListener('input', (e) => {
-            spotlights[0].intensity = parseInt(e.target.value);
-            updateSliderValues();
-        });
-        document.getElementById('greenSlider').addEventListener('input', (e) => {
-            spotlights[1].intensity = parseInt(e.target.value);
-            updateSliderValues();
-        });
-        document.getElementById('blueSlider').addEventListener('input', (e) => {
-            spotlights[2].intensity = parseInt(e.target.value);
-            updateSliderValues();
-        });
-
-        // Send to Palette
+        // Send to palette
         document.getElementById('sendToPalette').addEventListener('click', () => {
-            document.getElementById('hexInput').value = rgbToHex(currentMixedColor.r, currentMixedColor.g, currentMixedColor.b);
-            document.getElementById('colorPicker').value = rgbToHex(currentMixedColor.r, currentMixedColor.g, currentMixedColor.b).toLowerCase();
+            const hex = rgbToHex(state.r, state.g, state.b);
+            document.getElementById('hexInput').value = hex;
+            document.getElementById('colorPicker').value = hex.toLowerCase();
             updatePalette();
+            showToast('Color sent to palette');
         });
 
-        // Hex Input
-        document.getElementById('hexInput').addEventListener('input', (e) => {
-            let val = e.target.value;
-            if (!val.startsWith('#')) val = '#' + val;
-            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
-                document.getElementById('colorPicker').value = val.toLowerCase();
+        // Hex input
+        document.getElementById('hexInput').addEventListener('input', e => {
+            let v = e.target.value;
+            if (!v.startsWith('#')) v = '#' + v;
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) {
+                document.getElementById('colorPicker').value = v.toLowerCase();
                 updatePalette();
             }
         });
 
-        // Color Picker
-        document.getElementById('colorPicker').addEventListener('input', (e) => {
+        // Color picker
+        document.getElementById('colorPicker').addEventListener('input', e => {
             document.getElementById('hexInput').value = e.target.value.toUpperCase();
             updatePalette();
         });
 
         // Randomize
-        document.getElementById('randomizeBtn').addEventListener('click', () => {
+        document.getElementById('randomBtn').addEventListener('click', () => {
             const h = Math.random() * 360;
-            const s = 60 + Math.random() * 40;
-            const l = 40 + Math.random() * 20;
+            const s = 50 + Math.random() * 40;
+            const l = 40 + Math.random() * 25;
             const rgb = hslToRgb(h, s, l);
             const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
             document.getElementById('hexInput').value = hex;
@@ -1298,188 +1251,73 @@
             updatePalette();
         });
 
-        // Harmony Tabs
+        // Harmony tabs
         document.querySelectorAll('.harmony-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.harmony-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                currentHarmony = tab.dataset.harmony;
+                state.harmonyType = tab.dataset.type;
                 updatePalette();
             });
         });
 
-        function updatePalette() {
-            const hex = document.getElementById('hexInput').value || '#FFFFFF';
-            const rgb = hexToRgb(hex);
-            if (!rgb) return;
-
-            currentPalette = generatePalette(rgb, currentHarmony);
-            renderSwatches();
-            updateSampleUI();
-            updateContrastChecker();
-            updateColorBlindnessSimulation();
-        }
-
-        function renderSwatches() {
-            const container = document.getElementById('paletteSwatches');
-            container.innerHTML = '';
-
-            currentPalette.forEach((color, index) => {
-                const swatch = document.createElement('div');
-                swatch.className = 'swatch';
-                swatch.style.animationDelay = `${index * 0.1}s`;
-
-                let badge = '';
-                if (accessibleMode && index > 0) {
-                    const prevColor = currentPalette[index - 1];
-                    const ratio = getContrastRatio(color, prevColor);
-                    badge = ratio >= 4.5
-                        ? '<span class="swatch-badge pass">AA ✓</span>'
-                        : '<span class="swatch-badge fail">AA ✗</span>';
-                }
-
-                swatch.innerHTML = `
-                    <div class="swatch-color" style="background-color: ${color.hex}"></div>
-                    <div class="swatch-info">
-                        <span class="swatch-hex">${color.hex}</span>
-                        <span class="swatch-rgb">RGB(${color.r}, ${color.g}, ${color.b})</span>
-                        <span class="swatch-name">${color.name}</span>
-                        ${badge}
-                    </div>
-                `;
-
-                swatch.addEventListener('click', () => {
-                    navigator.clipboard.writeText(color.hex);
-                    showToast('Copied ' + color.hex);
-                    swatch.style.transform = 'scale(0.95)';
-                    setTimeout(() => swatch.style.transform = '', 150);
-                });
-
-                container.appendChild(swatch);
-            });
-        }
-
-        function updateSampleUI() {
-            if (currentPalette.length < 2) return;
-            const card = document.getElementById('sampleCard');
-            const bg = currentPalette[0];
-            const text = currentPalette.length > 1 ? currentPalette[1] : { hex: '#ffffff' };
-            const button = currentPalette.length > 2 ? currentPalette[2] : currentPalette[0];
-
-            card.style.backgroundColor = bg.hex;
-            card.querySelector('.sample-headline').style.color = text.hex;
-            card.querySelector('.sample-body').style.color = text.hex;
-
-            const btn = card.querySelector('.sample-button');
-            btn.style.backgroundColor = button.hex;
-            btn.style.color = bg.hex;
-        }
-
-        // ===================
-        // Accessibility Features
-        // ===================
-
-        // Collapse toggle
-        document.getElementById('accessibilityHeader').addEventListener('click', () => {
-            const header = document.getElementById('accessibilityHeader');
-            const content = document.getElementById('accessibilityContent');
-            header.classList.toggle('collapsed');
-            content.classList.toggle('collapsed');
+        // Accordion
+        document.getElementById('accessibilityAccordion').querySelector('.accordion-header').addEventListener('click', () => {
+            document.getElementById('accessibilityAccordion').classList.toggle('open');
         });
 
-        // Contrast Checker
-        function updateContrastChecker() {
-            const hex1 = document.getElementById('contrastHex1').value;
-            const hex2 = document.getElementById('contrastHex2').value;
-            const rgb1 = hexToRgb(hex1);
-            const rgb2 = hexToRgb(hex2);
-
-            if (!rgb1 || !rgb2) return;
-
-            const ratio = getContrastRatio(rgb1, rgb2);
-            document.getElementById('contrastRatio').textContent = ratio.toFixed(2) + ':1';
-
-            const badges = document.getElementById('contrastBadges');
-            badges.innerHTML = `
-                <span class="contrast-badge ${ratio >= 4.5 ? 'pass' : 'fail'}">AA Normal ${ratio >= 4.5 ? '✓' : '✗'}</span>
-                <span class="contrast-badge ${ratio >= 3 ? 'pass' : 'fail'}">AA Large ${ratio >= 3 ? '✓' : '✗'}</span>
-                <span class="contrast-badge ${ratio >= 7 ? 'pass' : 'fail'}">AAA Normal ${ratio >= 7 ? '✓' : '✗'}</span>
-                <span class="contrast-badge ${ratio >= 4.5 ? 'pass' : 'fail'}">AAA Large ${ratio >= 4.5 ? '✓' : '✗'}</span>
-            `;
-        }
-
-        ['contrastColor1', 'contrastColor2'].forEach(id => {
-            document.getElementById(id).addEventListener('input', (e) => {
-                const hexId = id.replace('Color', 'Hex');
-                document.getElementById(hexId).value = e.target.value.toUpperCase();
-                updateContrastChecker();
+        // Contrast inputs
+        ['contrast1', 'contrast2'].forEach((id, i) => {
+            document.getElementById(id).addEventListener('input', e => {
+                document.getElementById(`contrastHex${i + 1}`).value = e.target.value.toUpperCase();
+                updateContrast();
             });
         });
 
-        ['contrastHex1', 'contrastHex2'].forEach(id => {
-            document.getElementById(id).addEventListener('input', (e) => {
-                const colorId = id.replace('Hex', 'Color');
-                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
-                    document.getElementById(colorId).value = e.target.value.toLowerCase();
-                    updateContrastChecker();
+        ['contrastHex1', 'contrastHex2'].forEach((id, i) => {
+            document.getElementById(id).addEventListener('input', e => {
+                if (/^#[0-9A-Fa-f]{6}$/i.test(e.target.value)) {
+                    document.getElementById(`contrast${i + 1}`).value = e.target.value.toLowerCase();
+                    updateContrast();
                 }
             });
         });
 
-        // Color Blindness Simulator
+        // Color blindness buttons
         document.querySelectorAll('.cb-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.cb-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                cbType = btn.dataset.type;
-                updateColorBlindnessSimulation();
+                state.cbType = btn.dataset.type;
+                updateCBSimulation();
             });
         });
 
-        function updateColorBlindnessSimulation() {
-            const container = document.getElementById('simulatedPalette');
-            container.innerHTML = '';
-
-            currentPalette.forEach(color => {
-                const simulated = simulateColorBlindness(color, cbType);
-                const swatch = document.createElement('div');
-                swatch.className = 'simulated-swatch';
-                swatch.style.backgroundColor = rgbToHex(simulated.r, simulated.g, simulated.b);
-                swatch.title = `Original: ${color.hex}\nSimulated: ${rgbToHex(simulated.r, simulated.g, simulated.b)}`;
-                container.appendChild(swatch);
-            });
-        }
-
-        // Accessible Mode Toggle
-        document.getElementById('accessibleToggle').addEventListener('click', () => {
-            const toggle = document.getElementById('accessibleToggle');
-            toggle.classList.toggle('active');
-            accessibleMode = toggle.classList.contains('active');
-            renderSwatches();
+        // Accessible toggle
+        document.getElementById('accessibleToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            state.accessibleMode = this.classList.contains('active');
         });
 
-        // Toast
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
+        // ============ Init ============
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCanvas();
+                drawSpotlights();
+            }, 100);
+        });
 
-        // ===================
-        // Initialize
-        // ===================
-
-        window.addEventListener('resize', resizeCanvas);
+        // Initial setup
         resizeCanvas();
-        animate(0);
-        updateSliderValues();
-
-        // Set initial palette
+        updateSliders();
+        updateDisplay();
+        drawSpotlights();
         document.getElementById('hexInput').value = '#FF8040';
         document.getElementById('colorPicker').value = '#ff8040';
         updatePalette();
-        updateContrastChecker();
+        updateContrast();
     </script>
 </body>
 </html>
