@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Readable — Color Explorer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- SVG Filters for Vision Simulation -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;">
+    <defs>
+      <filter id="filter-protanopia">
+        <feColorMatrix type="matrix" values="0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="filter-deuteranopia">
+        <feColorMatrix type="matrix" values="0.625 0.375 0 0 0  0.700 0.300 0 0 0  0 0.300 0.7 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="filter-tritanopia">
+        <feColorMatrix type="matrix" values="0.950 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="filter-monochromacy">
+        <feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <header>
+    <div class="header-left">
+      <h1>Readable</h1>
+      <span class="header-subtitle">Color Readability Explorer</span>
+    </div>
+    <fieldset class="vision-fieldset" id="visionFieldset">
+      <legend class="sr-only">Vision Simulation</legend>
+      <span class="vision-label">Vision Simulation</span>
+      <div class="vision-options">
+        <label><input type="radio" name="vision" value="normal" checked> Normal</label>
+        <label><input type="radio" name="vision" value="protanopia"> Protanopia</label>
+        <label><input type="radio" name="vision" value="deuteranopia"> Deuteranopia</label>
+        <label><input type="radio" name="vision" value="tritanopia"> Tritanopia</label>
+        <label><input type="radio" name="vision" value="monochromacy"> Monochromacy</label>
+      </div>
+    </fieldset>
+  </header>
+
+  <main>
+    <div class="controls-column">
+      <!-- Background Color -->
+      <section class="control-card">
+        <h2>Background Color</h2>
+        <div class="slider-group" id="bgControls">
+          <div class="slider-row channel-r">
+            <label for="bg-r-slider">R</label>
+            <input type="range" id="bg-r-slider" min="0" max="255" value="15" class="slider slider-r">
+            <input type="number" id="bg-r-num" min="0" max="255" step="1" value="15" class="num-input">
+          </div>
+          <div class="slider-row channel-g">
+            <label for="bg-g-slider">G</label>
+            <input type="range" id="bg-g-slider" min="0" max="255" value="17" class="slider slider-g">
+            <input type="number" id="bg-g-num" min="0" max="255" step="1" value="17" class="num-input">
+          </div>
+          <div class="slider-row channel-b">
+            <label for="bg-b-slider">B</label>
+            <input type="range" id="bg-b-slider" min="0" max="255" value="23" class="slider slider-b">
+            <input type="number" id="bg-b-num" min="0" max="255" step="1" value="23" class="num-input">
+          </div>
+        </div>
+        <div class="swatch" id="bgSwatch" aria-label="Background color: #0f1117"></div>
+      </section>
+
+      <!-- Text Color -->
+      <section class="control-card">
+        <h2>Text Color</h2>
+        <div class="slider-group" id="textControls">
+          <div class="slider-row channel-r">
+            <label for="txt-r-slider">R</label>
+            <input type="range" id="txt-r-slider" min="0" max="255" value="241" class="slider slider-r">
+            <input type="number" id="txt-r-num" min="0" max="255" step="1" value="241" class="num-input">
+          </div>
+          <div class="slider-row channel-g">
+            <label for="txt-g-slider">G</label>
+            <input type="range" id="txt-g-slider" min="0" max="255" value="245" class="slider slider-g">
+            <input type="number" id="txt-g-num" min="0" max="255" step="1" value="245" class="num-input">
+          </div>
+          <div class="slider-row channel-b">
+            <label for="txt-b-slider">B</label>
+            <input type="range" id="txt-b-slider" min="0" max="255" value="249" class="slider slider-b">
+            <input type="number" id="txt-b-num" min="0" max="255" step="1" value="249" class="num-input">
+          </div>
+        </div>
+        <div class="swatch" id="txtSwatch" aria-label="Text color: #f1f5f9"></div>
+      </section>
+
+      <!-- Font Size -->
+      <section class="control-card">
+        <h2>Font Size</h2>
+        <div class="slider-row font-size-row">
+          <input type="range" id="fontSize-slider" min="10" max="72" value="32" class="slider slider-size">
+          <input type="number" id="fontSize-num" min="10" max="72" step="1" value="32" class="num-input">
+          <span class="unit">px</span>
+        </div>
+      </section>
+
+      <!-- Presets -->
+      <section class="control-card">
+        <h2>Presets</h2>
+        <div class="preset-row">
+          <select id="presetSelect">
+            <option value="custom" selected>Custom</option>
+            <option value="0">High Contrast (Black on White)</option>
+            <option value="1">White on Black</option>
+            <option value="2">Low Contrast — Gray on Gray</option>
+            <option value="3">Web Classic (Navy on White)</option>
+            <option value="4">Amber on Dark (terminal)</option>
+            <option value="5">Ocean Blue</option>
+            <option value="6">Soft Pink on White</option>
+            <option value="7">Problematic: Yellow on White</option>
+            <option value="8">Problematic: Red on Green</option>
+            <option value="9">Solarized (Classic)</option>
+          </select>
+          <div class="preset-swatch-pair" id="presetSwatchPair">
+            <div class="preset-swatch-bg" id="presetSwatchBg"></div>
+            <div class="preset-swatch-txt" id="presetSwatchTxt">A</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="display-column">
+      <!-- Text Display Area -->
+      <div class="text-display-wrapper" id="textDisplayWrapper">
+        <div class="text-display" id="textDisplay" contenteditable="true" role="textbox" aria-label="Sample text preview">
+          The quick brown fox jumps over the lazy dog. 0123456789
+        </div>
+      </div>
+
+      <!-- Contrast Ratio -->
+      <div class="metrics-card">
+        <div class="contrast-ratio-display">
+          <span class="metric-label">Contrast Ratio</span>
+          <span class="contrast-value" id="contrastValue">21.00:1</span>
+        </div>
+        <div class="luminosity-values">
+          <span id="bgLuminosity">BG Luminosity: 1.000</span>
+          <span id="txtLuminosity">Text Luminosity: 0.000</span>
+        </div>
+
+        <!-- WCAG Badges -->
+        <div class="wcag-badges">
+          <div class="badge" id="badgeNormalAA" role="status" aria-label="Normal Text AA: Pass">
+            <span class="badge-icon">&#10003;</span> Normal Text AA
+          </div>
+          <div class="badge" id="badgeLargeAA" role="status" aria-label="Large Text AA: Pass">
+            <span class="badge-icon">&#10003;</span> Large Text AA
+          </div>
+        </div>
+      </div>
+
+      <!-- Disabled note -->
+      <div class="vision-note" id="visionNote" hidden>
+        Disable vision simulation to adjust colors
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
