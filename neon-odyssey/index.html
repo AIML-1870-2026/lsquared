@@ -52,9 +52,9 @@ canvas{display:block;image-rendering:pixelated}
 .ghost-list{max-height:300px;overflow-y:auto;width:100%;max-width:500px}
 .ghost-item{border:1px solid #FF00AA33;margin:4px 0;padding:8px;display:flex;justify-content:space-between;align-items:center;font-size:0.8rem}
 .ghost-item .ghost-score{color:#FF00AA;font-family:'Orbitron',sans-serif}
-#touchL,#touchR{position:fixed;bottom:0;width:50%;height:40%;opacity:0;pointer-events:all;z-index:100}
+#touchL,#touchR{position:fixed;bottom:0;width:50%;height:40%;opacity:0;pointer-events:none;z-index:100}
 #touchL{left:0}#touchR{right:0}
-#touchDown{position:fixed;bottom:0;left:25%;width:50%;height:20%;opacity:0;pointer-events:all;z-index:101}
+#touchDown{position:fixed;bottom:0;left:25%;width:50%;height:20%;opacity:0;pointer-events:none;z-index:101}
 </style>
 </head>
 <body>
@@ -929,6 +929,7 @@ const G = {
     showScreen(null);
     document.getElementById('hud').classList.remove('hidden');
     document.getElementById('bossBar').classList.add('hidden');
+    document.querySelectorAll('#touchL,#touchR,#touchDown').forEach(el=>el.style.pointerEvents='all');
     this.spawnInitialChunks();
   },
 
@@ -951,7 +952,7 @@ const G = {
     this.chunkOffset+=800+Math.random()*600;
   },
 
-  pause() { if(this.state==='playing'){this.state='paused'; showScreen('pauseScreen'); this._updatePauseStats();} },
+  pause() { if(this.state==='playing'){this.state='paused'; document.querySelectorAll('#touchL,#touchR,#touchDown').forEach(el=>el.style.pointerEvents='none'); showScreen('pauseScreen'); this._updatePauseStats();} },
 
   _updatePauseStats() {
     document.getElementById('pauseStats').innerHTML=`Score: ${Math.floor(this.score)} &nbsp;|&nbsp; Zone: ${this.zoneIdx+1} &nbsp;|&nbsp; Combo: ${this.combo}`;
@@ -968,6 +969,7 @@ const G = {
 
   _showGameOver() {
     this.state='gameover';
+    document.querySelectorAll('#touchL,#touchR,#touchDown').forEach(el=>el.style.pointerEvents='none');
     Audio.stopMusic();
     if(this.score>this.highScore) { this.highScore=Math.floor(this.score); this.highZone=this.zoneIdx; }
     this.saveProgress();
@@ -1418,9 +1420,19 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   document.getElementById('hud').classList.add('hidden');
   if(id) { const el=document.getElementById(id); if(el) el.classList.remove('hidden'); }
+  // Going to a non-game screen: disable touch zones and reset to menu state
+  if(id && id !== 'pauseScreen') {
+    document.querySelectorAll('#touchL,#touchR,#touchDown').forEach(el=>el.style.pointerEvents='none');
+    if(G.state !== 'playing' && G.state !== 'paused') G.state='menu';
+  }
 }
 function startGame() { showScreen(null); G.startGame(); }
-function resumeGame() { G.state='playing'; showScreen(null); document.getElementById('hud').classList.remove('hidden'); }
+function resumeGame() {
+  G.state='playing';
+  document.querySelectorAll('#touchL,#touchR,#touchDown').forEach(el=>el.style.pointerEvents='all');
+  showScreen(null);
+  document.getElementById('hud').classList.remove('hidden');
+}
 
 function updateSettings() {
   CFG.MUSIC_VOL=parseFloat(document.getElementById('musicVol').value);
