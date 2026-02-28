@@ -531,7 +531,7 @@ class Player {
     }
     this.trailParticles=this.trailParticles.filter(p=>{p.life-=dt;return p.life>0;});
     // Foot sparks
-    if(this.onGround&&this.runFrame===0) G.particles.add(this.x+this.w/2,this.y,'#00FFFF',-20+Math.random()*40,-50,'#00FFFF',0.1,1);
+    if(this.onGround&&this.runFrame===0) G.particles.add(this.x+this.w/2,this.y,-20+Math.random()*40,-50,'#00FFFF',0.1,1,200);
     // Land vfx
     if(this.landVfxTimer>0) this.landVfxTimer-=dt;
   }
@@ -619,9 +619,9 @@ class Obstacle {
       this.active=Math.sin((this.timer/p)*Math.PI*2)<0;
     }
     if(this.type==='drone') {
-      const amp=this.props.dy||60, per=this.props.period||2;
-      this.y=this.props.baseY+(this.props.baseY===undefined?0:0)+Math.sin(this.timer/per*Math.PI*2)*amp;
       if(this.props.baseY===undefined) this.props.baseY=this.y;
+      const amp=this.props.dy||60, per=this.props.period||2;
+      this.y=this.props.baseY+Math.sin(this.timer/per*Math.PI*2)*amp;
     }
   }
   draw(ctx, zone) {
@@ -1143,7 +1143,7 @@ const G = {
     this.obstacles=this.obstacles.filter(o=>o.x>-300);
 
     // Spawn new chunks
-    while(this.chunkOffset < this.player?(this.player.x+CFG.W*1.5):CFG.W*2) {
+    while(this.chunkOffset < (this.player ? (this.player.x+CFG.W*1.5) : CFG.W*2)) {
       const diff=Math.min(4,Math.floor(this.survivedTime/20*0.5));
       this._spawnChunk(diff);
     }
