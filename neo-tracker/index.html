@@ -508,26 +508,26 @@ async function fetchNeoWs() {
   return CACHE[key];
 }
 
+async function jplFetch(url) {
+  const r = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url));
+  if (!r.ok) throw new Error('API error ' + r.status);
+  return r.json();
+}
+
 async function fetchCAD(daysOut, distMax) {
   const start = formatDate(new Date());
   const end = formatDate(addDays(new Date(), daysOut));
   const key = `cad-${start}-${daysOut}-${distMax}`;
   if (CACHE[key]) return CACHE[key];
-  const auDist = distMax * 0.00257; // LD to AU approx
   const url = `https://ssd-api.jpl.nasa.gov/cad.api?date-min=${start}&date-max=${end}&dist-max=${distMax}LD&sort=dist&limit=200`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('SBDB API error');
-  const d = await r.json();
+  const d = await jplFetch(url);
   CACHE[key] = d;
   return d;
 }
 
 async function fetchSentry() {
   if (CACHE['sentry']) return CACHE['sentry'];
-  const url = `https://ssd-api.jpl.nasa.gov/sentry.api?all=1`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('Sentry API error');
-  const d = await r.json();
+  const d = await jplFetch('https://ssd-api.jpl.nasa.gov/sentry.api?all=1');
   CACHE['sentry'] = d;
   return d;
 }
