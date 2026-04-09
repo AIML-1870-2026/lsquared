@@ -617,7 +617,7 @@ function updateRightPanel(tab) {
 }
 
 // ===================== GLOBE (Tab 0) =====================
-function calcAltitude(ld) { return 0.005 + Math.log(ld + 1) / Math.log(60) * 0.12; }
+function calcAltitude(ld) { return 0.08 + Math.log(ld + 1) / Math.log(60) * 1.8; }
 
 function makeGlobeDot(d) {
   const el = document.createElement('div');
