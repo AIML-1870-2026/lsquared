@@ -514,15 +514,33 @@ async function jplFetch(url) {
   return r.json();
 }
 
-async function fetchCAD(daysOut, distMax) {
-  const start = formatDate(new Date());
-  const end = formatDate(addDays(new Date(), daysOut));
-  const key = `cad-${start}-${daysOut}-${distMax}`;
+async function fetchScheduleNeoWs(daysOut, maxLD) {
+  const key = `sched-${formatDate(new Date())}-${daysOut}-${maxLD}`;
   if (CACHE[key]) return CACHE[key];
-  const url = `https://ssd-api.jpl.nasa.gov/cad.api?date-min=${start}&date-max=${end}&dist-max=${distMax}LD&sort=dist&limit=200`;
-  const d = await jplFetch(url);
-  CACHE[key] = d;
-  return d;
+  const today = new Date();
+  const chunks = [];
+  for (let offset = 0; offset < daysOut; offset += 7) {
+    const s = formatDate(addDays(today, offset));
+    const e = formatDate(addDays(today, Math.min(offset + 6, daysOut - 1)));
+    chunks.push({s, e});
+  }
+  // Fetch in parallel, batched to avoid rate limits
+  const batchSize = 10;
+  let all = [];
+  for (let i = 0; i < chunks.length; i += batchSize) {
+    const batch = chunks.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map(({s, e}) => {
+      const ck = `neows-${s}-${e}`;
+      if (CACHE[ck]) return Promise.resolve(CACHE[ck]);
+      return fetch(`https://api.nasa.gov/neo/rest/v1/feed?start_date=${s}&end_date=${e}&api_key=${API_KEY()}`)
+        .then(r => r.json()).then(d => { const neos = parseNeoWs(d); CACHE[ck] = neos; return neos; })
+        .catch(() => []);
+    }));
+    all = all.concat(results.flat());
+  }
+  const filtered = all.filter(n => n.distLD <= parseFloat(maxLD));
+  CACHE[key] = filtered;
+  return filtered;
 }
 
 async function fetchSentry() {
@@ -792,20 +810,16 @@ async function loadSchedule() {
   tl.innerHTML = '<div class="skeleton skeleton-row"></div>'.repeat(5);
   try {
     const days = +document.getElementById('schedRange').value;
-    const dist = document.getElementById('schedDist').value;
-    const raw = await fetchCAD(days, dist);
-    const fields = raw.fields;
-    const fi = (f) => fields.indexOf(f);
-    scheduleData = (raw.data || []).map(row => ({
-      name: row[fi('des')], date: row[fi('cd')].slice(0,10),
-      distLD: parseFloat(row[fi('dist')]) / 0.00257,
-      distKm: parseFloat(row[fi('dist')]) * 149597870.7 * parseFloat(row[fi('dist')]) * 0,
-      dia: row[fi('diameter')] ? parseFloat(row[fi('diameter')]) * 1000 : null,
-      vel: row[fi('v_rel')] ? parseFloat(row[fi('v_rel')]) : null,
-      distAU: parseFloat(row[fi('dist')])
-    })).map(r => ({...r, distKm: r.distAU * 149597870.7}));
+    const maxLD = document.getElementById('schedDist').value;
+    const neos = await fetchScheduleNeoWs(days, maxLD);
+    scheduleData = neos.map(n => ({
+      name: n.name, date: n.date, distLD: n.distLD,
+      distKm: n.distKm, dia: n.dia, vel: n.vel,
+      hazardous: n.is_potentially_hazardous_asteroid
+    }));
     const sortBy = document.getElementById('schedSort').value;
-    if (sortBy==='dist') scheduleData.sort((a,b) => a.distLD-b.distLD);
+    if (sortBy === 'dist') scheduleData.sort((a,b) => a.distLD - b.distLD);
+    else scheduleData.sort((a,b) => new Date(a.date) - new Date(b.date));
     renderSchedule();
   } catch(e) {
     tl.innerHTML = `<div class="error-state">${e.message}<button onclick="loadSchedule()">RETRY</button></div>`;
@@ -829,6 +843,7 @@ function renderSchedule() {
         <div class="tl-meta-item"><strong>${fmt(item.distLD,3)} LD</strong> · ${fmtInt(item.distKm)} km</div>
         ${item.dia ? `<div class="tl-meta-item">~<strong>${Math.round(item.dia)}m</strong></div>` : ''}
         ${item.vel ? `<div class="tl-meta-item"><strong>${fmt(item.vel,1)} km/s</strong></div>` : ''}
+        ${item.hazardous ? `<span class="badge badge-red">PHA</span>` : ''}
       </div>
     </div>`;
   }
