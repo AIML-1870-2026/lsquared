@@ -607,19 +607,29 @@ function updateRightPanel(tab) {
 // ===================== GLOBE (Tab 0) =====================
 function calcAltitude(ld) { return 0.005 + Math.log(ld + 1) / Math.log(60) * 0.12; }
 
+function makeGlobeDot(d) {
+  const el = document.createElement('div');
+  const size = d.isMoon ? 14 : 10;
+  el.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;background:${d.color};box-shadow:0 0 8px ${d.color};cursor:${d.isAsteroid?'pointer':'default'};transition:transform .15s;pointer-events:auto;`;
+  el.title = d.name + (d.distStr ? ' — ' + d.distStr : '');
+  if (d.isAsteroid) {
+    el.onclick = (e) => { e.stopPropagation(); selectAsteroid(d.neoObj); };
+    el.onmouseenter = () => { el.style.transform = 'scale(1.8)'; };
+    el.onmouseleave = () => { el.style.transform = 'scale(1)'; };
+  }
+  return el;
+}
+
 function initGlobe() {
   const el = document.getElementById('globeMount');
   globeInstance = Globe()(el)
     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-    .onPointClick(d => { if (d.isAsteroid) selectAsteroid(d.neoObj); })
-    .pointsData([])
-    .pointLat('lat')
-    .pointLng('lng')
-    .pointAltitude('altitude')
-    .pointColor('color')
-    .pointRadius('radius')
-    .pointLabel(d => `<div style="font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(8,13,20,0.9);padding:6px 10px;border:1px solid #2a3f5f;border-radius:4px;color:#e8f0fe">${d.name}<br/><span style="color:#8ba3c4">${d.distStr}</span></div>`)
+    .htmlElementsData([])
+    .htmlLat('lat')
+    .htmlLng('lng')
+    .htmlAltitude('altitude')
+    .htmlElement(d => makeGlobeDot(d))
     .width(el.clientWidth)
     .height(el.clientHeight);
   globeInstance.controls().autoRotate = true;
@@ -631,14 +641,14 @@ function initGlobe() {
 
 function updateGlobePoints() {
   if (!globeInstance) return;
-  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', radius:0.4, isAsteroid:false, distStr:'384,400 km', lat:23.5, lng:45};
+  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', isMoon:true, isAsteroid:false, distStr:'384,400 km', lat:23.5, lng:45};
   const pts = neoData.map(n => ({
     name: n.name, altitude: calcAltitude(n.distLD), color: colorByRisk(n),
-    radius: 0.4, isAsteroid: true, neoObj: n,
+    isAsteroid: true, neoObj: n,
     lat: (Math.random()-0.5)*160, lng: Math.random()*360, distStr: ldFmt(n.distLD)
   }));
   pts.push(moonPt);
-  globeInstance.pointsData(pts);
+  globeInstance.htmlElementsData(pts);
 }
 
 function selectAsteroid(neo) {
