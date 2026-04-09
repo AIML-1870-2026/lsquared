@@ -354,11 +354,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg-void);color:var(--text
         </div>
         <div class="control-group"><span class="control-label">MAX DIST:</span>
           <select class="control-select" id="schedDist" onchange="loadSchedule()">
-            <option value="0.05">0.5 LD</option>
-            <option value="0.1">1 LD</option>
-            <option value="0.5" selected>5 LD</option>
-            <option value="1.0">10 LD</option>
-            <option value="999">Any</option>
+            <option value="0.5">0.5 LD</option>
+            <option value="1">1 LD</option>
+            <option value="5" selected>5 LD</option>
+            <option value="10">10 LD</option>
+            <option value="50">Any</option>
           </select>
         </div>
         <div class="control-group"><span class="control-label">SORT:</span>
@@ -596,6 +596,8 @@ function initGlobe() {
     .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
     .onPointClick(d => { if (d.isAsteroid) selectAsteroid(d.neoObj); })
     .pointsData([])
+    .pointLat('lat')
+    .pointLng('lng')
     .pointAltitude('altitude')
     .pointColor('color')
     .pointRadius('radius')
@@ -611,7 +613,7 @@ function initGlobe() {
 
 function updateGlobePoints() {
   if (!globeInstance) return;
-  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', radius:0.35, isAsteroid:false, distStr:'384,400 km'};
+  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', radius:0.35, isAsteroid:false, distStr:'384,400 km', lat:23.5, lng:45};
   const pts = neoData.map(n => ({
     name: n.name, altitude: calcAltitude(n.distLD), color: colorByRisk(n),
     radius: Math.max(0.2, Math.min(0.6, n.dia/300)), isAsteroid: true, neoObj: n,
@@ -844,14 +846,19 @@ async function loadSentry() {
   const tbody = document.getElementById('sentryTableBody');
   try {
     const raw = await fetchSentry();
-    sentryData = (raw.data || []).map(obj => ({
-      name: obj.des, yearRange: obj.range,
-      nImp: +obj.n_imp, prob: parseFloat(obj.ip),
-      ps: parseFloat(obj.ps), ts: +obj.ts,
-      dia: obj.diameter ? parseFloat(obj.diameter)*1000 : null,
-      vel: obj.v_imp ? parseFloat(obj.v_imp) : null,
-      fullName: obj.fullname
-    }));
+    const sf = raw.fields || [];
+    const si = (f) => sf.indexOf(f);
+    sentryData = (raw.data || []).map(row => {
+      const get = (f) => { const i = si(f); return i>=0 ? row[i] : null; };
+      return {
+        name: get('des'), yearRange: get('range'),
+        nImp: +(get('n_imp')||1), prob: parseFloat(get('ip')||0),
+        ps: parseFloat(get('ps_max')??get('ps_cum')??-99), ts: +(get('ts_max')||0),
+        dia: get('diameter') ? parseFloat(get('diameter'))*1000 : null,
+        vel: get('v_imp') ? parseFloat(get('v_imp')) : null,
+        fullName: get('fullname')||get('des')
+      };
+    });
     sentryData.sort((a,b) => a.ps - b.ps); // most negative = most concerning relatively
     renderSentry();
   } catch(e) {
