@@ -587,7 +587,7 @@ function updateRightPanel(tab) {
 }
 
 // ===================== GLOBE (Tab 0) =====================
-function calcAltitude(ld) { return 0.08 + Math.log(ld + 1) / Math.log(60) * 0.62; }
+function calcAltitude(ld) { return 0.005 + Math.log(ld + 1) / Math.log(60) * 0.12; }
 
 function initGlobe() {
   const el = document.getElementById('globeMount');
@@ -613,10 +613,10 @@ function initGlobe() {
 
 function updateGlobePoints() {
   if (!globeInstance) return;
-  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', radius:0.35, isAsteroid:false, distStr:'384,400 km', lat:23.5, lng:45};
+  const moonPt = {name:'🌕 Moon (1 LD)', altitude:calcAltitude(1), color:'#c8d8f0', radius:0.4, isAsteroid:false, distStr:'384,400 km', lat:23.5, lng:45};
   const pts = neoData.map(n => ({
     name: n.name, altitude: calcAltitude(n.distLD), color: colorByRisk(n),
-    radius: Math.max(0.2, Math.min(0.6, n.dia/300)), isAsteroid: true, neoObj: n,
+    radius: 0.4, isAsteroid: true, neoObj: n,
     lat: (Math.random()-0.5)*160, lng: Math.random()*360, distStr: ldFmt(n.distLD)
   }));
   pts.push(moonPt);
