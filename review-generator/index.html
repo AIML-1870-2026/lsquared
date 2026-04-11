@@ -1086,7 +1086,9 @@ function toggleApiSection() {
 }
 
 function setApiKey() {
-  apiKey = document.getElementById('apiKeyInput').value.trim();
+  const raw = document.getElementById('apiKeyInput').value.trim();
+  // Strip any accidental whitespace, newlines, or quotes users might paste
+  apiKey = raw.replace(/[\s"']/g, '');
   if (!apiKey) return;
   fetchModels();
 }
@@ -1218,9 +1220,10 @@ Format the review with markdown: use **bold** for product name and key phrases, 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model,
@@ -1244,12 +1247,25 @@ Format the review with markdown: use **bold** for product name and key phrases, 
     lastReviewText = text;
     renderReview(text, productName, category, model, { overallVal, priceVal, featuresVal, usabilityVal, lengthVal, toneVal });
   } catch (e) {
+    console.error('[ReviewAI] Generation error:', e);
     hideSkeleton();
     showEmptyState();
-    if (e.message === 'auth') showError('API key invalid or expired. Check your key in the API Configuration section above.');
-    else if (e.message === 'rate_limit') showError('Rate limit reached. Wait a moment and try again, or upgrade your OpenAI plan.');
-    else if (e.message === 'empty') showError('The model returned an empty response. Try again.');
-    else showError(`Error: ${e.message}`);
+    if (e.message === 'auth') {
+      showError('API key invalid or expired. Re-enter your key in the API Configuration section above.');
+    } else if (e.message === 'rate_limit') {
+      showError('Rate limit reached. Wait a moment and try again, or upgrade your OpenAI plan.');
+    } else if (e.message === 'empty') {
+      showError('The model returned an empty response. Try again.');
+    } else if (e instanceof TypeError && e.message.toLowerCase().includes('fetch')) {
+      showError(
+        'Network request blocked. Common causes:\n' +
+        '① An ad blocker or browser extension is blocking the OpenAI request — try disabling it for this page\n' +
+        '② Your API key was not saved — expand API Configuration, paste your key, and click Connect\n' +
+        '③ No internet connection'
+      );
+    } else {
+      showError(`OpenAI error: ${e.message}`);
+    }
   } finally {
     setGenerating(false);
   }
@@ -1307,7 +1323,9 @@ function hideEmptyState() { document.getElementById('emptyState').style.display 
 function showEmptyState() { document.getElementById('emptyState').style.display = ''; }
 function showError(msg) {
   const box = document.getElementById('errorBox');
-  box.textContent = '⚠ ' + msg;
+  box.innerHTML = msg.split('\n').map((line, i) =>
+    i === 0 ? `<strong>⚠ ${line}</strong>` : `<div style="margin-top:6px;padding-left:4px;font-size:12px;opacity:0.85">${line}</div>`
+  ).join('');
   box.classList.add('active');
 }
 function clearError() { document.getElementById('errorBox').classList.remove('active'); }
@@ -1460,8 +1478,18 @@ function closeAcDropdown() {
 })();
 
 // ===== INIT =====
-document.getElementById('apiKeyInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') setApiKey();
+const apiInput = document.getElementById('apiKeyInput');
+// Auto-save key as user types (debounced 600ms) — no need to click Connect
+let apiDebounce;
+apiInput.addEventListener('input', () => {
+  clearTimeout(apiDebounce);
+  const val = apiInput.value.trim().replace(/[\s"']/g, '');
+  if (val.length > 20) {
+    apiDebounce = setTimeout(() => { apiKey = val; fetchModels(); }, 600);
+  }
+});
+apiInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(apiDebounce); setApiKey(); }
 });
 </script>
 </body>
