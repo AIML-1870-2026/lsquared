@@ -279,6 +279,9 @@ input[type="text"]::placeholder, textarea::placeholder { color: var(--muted2); }
 
 textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
 
+/* Datalist dropdown */
+input[list]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; filter: invert(1); }
+
 select {
   background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239898a8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -779,7 +782,29 @@ kbd {
 
       <div class="field">
         <label for="productName">Product Name</label>
-        <input type="text" id="productName" placeholder="e.g., Sony WH-1000XM5 Headphones" aria-required="true">
+        <input type="text" id="productName" list="productExamples" placeholder="e.g., Sony WH-1000XM5 Headphones" aria-required="true" autocomplete="off">
+        <datalist id="productExamples">
+          <option value="Sony WH-1000XM5 Headphones">
+          <option value="Apple AirPods Pro (2nd Gen)">
+          <option value="Samsung 65&quot; QLED 4K TV">
+          <option value="Apple iPhone 16 Pro">
+          <option value="MacBook Pro M4">
+          <option value="Nintendo Switch 2">
+          <option value="Dyson V15 Detect Vacuum">
+          <option value="KitchenAid Stand Mixer">
+          <option value="Levi's 501 Original Jeans">
+          <option value="Nike Air Max 270">
+          <option value="Stanley 40oz Quencher Tumbler">
+          <option value="Kindle Paperwhite (2024)">
+          <option value="Bose QuietComfort 45 Headphones">
+          <option value="Nespresso Vertuo Next Coffee Maker">
+          <option value="Instant Pot Duo 7-in-1">
+          <option value="GoPro Hero 13 Black">
+          <option value="Fujifilm X100VI Camera">
+          <option value="Lego Technic Bugatti Chiron">
+          <option value="The North Face Puffer Jacket">
+          <option value="Oura Ring Gen 3">
+        </datalist>
         <div id="productNameError" style="display:none;font-size:11px;color:var(--red);margin-top:4px;">Product name is required</div>
       </div>
 
