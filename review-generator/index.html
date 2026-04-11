@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Review Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f11;
+  --surface: #1a1a1f;
+  --surface2: #222228;
+  --border: #2a2a32;
+  --border-hover: #3a3a48;
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --amber-glow: rgba(245,166,35,0.25);
+  --slate: #6c7ee1;
+  --slate-dim: rgba(108,126,225,0.12);
+  --text: #e8e8ed;
+  --muted: #9898a8;
+  --muted2: #5a5a6e;
+  --green: #4caf7d;
+  --green-dim: rgba(76,175,125,0.12);
+  --red: #e05a5a;
+  --red-dim: rgba(224,90,90,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* Grain texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--amber); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #e8960f; }
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(15,15,17,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.header-logo span { color: var(--amber); }
+
+.ftc-badge {
+  background: rgba(224,90,90,0.1);
+  border: 1px solid rgba(224,90,90,0.25);
+  color: var(--red);
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.header-spacer { flex: 1; }
+
+.about-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+}
+.about-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ===== MAIN LAYOUT ===== */
+.main {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 32px 64px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .main { grid-template-columns: 1fr; padding: 20px 16px 48px; gap: 16px; }
+  .header { padding: 0 16px; }
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: rgba(26,26,31,0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--border-hover); }
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title-icon { font-size: 18px; }
+
+/* ===== API KEY SECTION ===== */
+.api-section {
+  margin-bottom: 20px;
+}
+
+.api-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s;
+  user-select: none;
+}
+.api-toggle:hover { border-color: var(--amber); }
+
+.api-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.api-toggle-arrow {
+  color: var(--muted);
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+.api-toggle-arrow.open { transform: rotate(180deg); }
+
+.api-body {
+  display: none;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  background: rgba(26,26,31,0.5);
+}
+.api-body.open { display: block; }
+
+.api-key-row { display: flex; gap: 8px; }
+.api-key-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.api-key-input:focus { border-color: var(--amber); }
+.api-key-input::placeholder { color: var(--muted2); }
+
+.btn-small {
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,166,35,0.3);
+  color: var(--amber);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-small:hover { background: rgba(245,166,35,0.2); }
+
+.api-meta {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ===== FORM FIELDS ===== */
+.field { margin-bottom: 18px; }
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+input[type="text"], select, textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="text"]:focus, select:focus, textarea:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-dim);
+}
+input[type="text"].error { border-color: var(--red); animation: shake 0.35s ease; }
+input[type="text"]::placeholder, textarea::placeholder { color: var(--muted2); }
+
+textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239898a8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
+select option { background: var(--surface); }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Model status pill */
+.model-row { display: flex; align-items: center; gap: 10px; }
+.model-row select { flex: 1; }
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.status-pill.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(76,175,125,0.25); }
+.status-pill.amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,0.25); }
+.status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* ===== SLIDERS ===== */
+.slider-group { margin-bottom: 18px; }
+.slider-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.slider-label-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.slider-sentiment-label {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--amber);
+  transition: color 0.2s;
+}
+
+.slider-wrap { position: relative; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right, var(--red) 0%, var(--amber) 50%, var(--green) 100%);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--amber);
+  box-shadow: 0 0 0 0 var(--amber-glow);
+  transition: box-shadow 0.2s;
+  cursor: grab;
+}
+input[type="range"]::-webkit-slider-thumb:active { cursor: grabbing; box-shadow: 0 0 0 6px var(--amber-glow); }
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--text);
+  border: 2px solid var(--amber);
+  cursor: grab;
+}
+
+.slider-tooltip {
+  position: absolute;
+  top: -28px;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--amber);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+input[type="range"]:hover + .slider-tooltip,
+input[type="range"]:focus + .slider-tooltip { opacity: 1; }
+
+/* Step slider */
+.step-slider-wrap { margin-bottom: 18px; }
+.step-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+.step-slider-labels span {
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted2);
+  text-align: center;
+  flex: 1;
+}
+.step-slider-labels span.active { color: var(--amber); }
+
+/* ===== GENERATE BUTTON ===== */
+.generate-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--amber);
+  border: none;
+  border-radius: var(--radius);
+  color: #0f0f11;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.2s;
+  margin-top: 8px;
+  letter-spacing: 0.3px;
+}
+
+.generate-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%);
+  background-size: 200% 100%;
+  background-position: -100% 0;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -100% 0; }
+  60%, 100% { background-position: 200% 0; }
+}
+
+.generate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px var(--amber-glow), 0 0 0 3px var(--amber-dim);
+}
+.generate-btn:active:not(:disabled) { transform: translateY(0); }
+.generate-btn:disabled {
+  background: var(--surface2);
+  color: var(--muted);
+  cursor: not-allowed;
+  animation: none;
+}
+.generate-btn:disabled::before { display: none; }
+
+.btn-dots span {
+  display: inline-block;
+  animation: blink 1.2s ease-in-out infinite;
+}
+.btn-dots span:nth-child(2) { animation-delay: 0.2s; }
+.btn-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+kbd {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(15,15,17,0.7);
+  vertical-align: middle;
+}
+
+/* ===== OUTPUT PANEL ===== */
+.output-panel {
+  position: sticky;
+  top: 88px;
+}
+
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.output-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+.output-actions { display: flex; gap: 8px; }
+
+.icon-btn {
+  width: 34px; height: 34px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  transition: all 0.2s;
+  position: relative;
+}
+.icon-btn:hover { border-color: var(--amber); color: var(--amber); }
+.icon-btn.hidden { display: none; }
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.icon-btn:hover .tooltip { opacity: 1; }
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+  text-align: center;
+  gap: 12px;
+  color: var(--muted2);
+}
+.empty-icon { font-size: 42px; opacity: 0.4; }
+.empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  color: var(--muted);
+}
+.empty-sub { font-size: 13px; }
+
+/* Skeleton loader */
+.skeleton-wrap { display: none; }
+.skeleton-wrap.active { display: block; }
+.skeleton-line {
+  height: 14px;
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  animation: skel 1.4s ease-in-out infinite;
+}
+@keyframes skel {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Review output */
+.review-content { display: none; }
+.review-content.active { display: block; }
+
+.review-product-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.review-product-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.category-tag {
+  background: var(--slate-dim);
+  color: var(--slate);
+  border: 1px solid rgba(108,126,225,0.25);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.review-body {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+.review-body h1, .review-body h2, .review-body h3 {
+  font-family: 'Playfair Display', serif;
+  color: var(--text);
+  margin: 16px 0 8px;
+}
+.review-body h1 { font-size: 20px; }
+.review-body h2 { font-size: 17px; }
+.review-body h3 { font-size: 15px; }
+.review-body p { margin-bottom: 10px; }
+.review-body strong { color: var(--amber); }
+.review-body em { color: var(--slate); }
+.review-body ul, .review-body ol { padding-left: 20px; margin-bottom: 10px; }
+.review-body li { margin-bottom: 4px; }
+.review-body a { color: var(--slate); }
+
+.review-meta {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.meta-item {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted2);
+  display: flex; align-items: center; gap: 4px;
+}
+.meta-item strong { color: var(--muted); }
+
+.review-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+}
+
+/* FTC banner */
+.ftc-banner {
+  background: rgba(224,90,90,0.06);
+  border: 1px solid rgba(224,90,90,0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 11px;
+  color: var(--red);
+  line-height: 1.5;
+  display: none;
+}
+.ftc-banner.active { display: block; }
+
+/* Error box */
+.error-box {
+  background: var(--red-dim);
+  border: 1px solid rgba(224,90,90,0.25);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 13px;
+  color: var(--red);
+  margin-bottom: 12px;
+  display: none;
+}
+.error-box.active { display: block; }
+
+/* Section divider */
+.section-gap { height: 20px; }
+.section-label {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted2);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 18px;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15,15,17,0.82);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  max-width: 520px;
+  width: 90%;
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.modal h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  color: var(--amber);
+  margin: 16px 0 6px;
+}
+.modal p, .modal li {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.modal ul { padding-left: 18px; margin-bottom: 10px; }
+.modal a { color: var(--amber); text-decoration: none; }
+.modal a:hover { text-decoration: underline; }
+.modal-close {
+  position: absolute;
+  top: 14px; right: 18px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.modal-sub {
+  font-size: 12px;
+  color: var(--muted2);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-logo">Review<span>AI</span></div>
+  <div class="ftc-badge">⚠ AI-Generated · Educational Only</div>
+  <div class="header-spacer"></div>
+  <button class="about-btn" onclick="openAbout()" aria-label="About this tool">?</button>
+</header>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Left Panel -->
+  <div class="left-col">
+
+    <!-- API Config Card -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="api-section">
+        <div class="api-toggle" onclick="toggleApiSection()" id="apiToggle" role="button" aria-expanded="false">
+          <div class="api-toggle-left">🔑 API Configuration</div>
+          <span class="api-toggle-arrow" id="apiArrow">▼</span>
+        </div>
+        <div class="api-body" id="apiBody">
+          <div class="api-key-row">
+            <input type="password" class="api-key-input" id="apiKeyInput" placeholder="sk-..." aria-label="OpenAI API Key" autocomplete="off">
+            <button class="btn-small" onclick="setApiKey()">Connect</button>
+          </div>
+          <div class="api-meta">
+            🔒 Stored in memory only — never saved to disk
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Info Card -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title"><span class="card-title-icon">📦</span> Product Information</div>
+
+      <div class="field">
+        <label for="productName">Product Name</label>
+        <input type="text" id="productName" placeholder="e.g., Sony WH-1000XM5 Headphones" aria-required="true">
+        <div id="productNameError" style="display:none;font-size:11px;color:var(--red);margin-top:4px;">Product name is required</div>
+      </div>
+
+      <div class="field">
+        <label for="productCategory">Product Category</label>
+        <select id="productCategory" aria-label="Product Category">
+          <option value="Electronics">Electronics</option>
+          <option value="Clothing & Apparel">Clothing &amp; Apparel</option>
+          <option value="Food & Beverage">Food &amp; Beverage</option>
+          <option value="Home & Garden">Home &amp; Garden</option>
+          <option value="Sports & Outdoors">Sports &amp; Outdoors</option>
+          <option value="Books & Media">Books &amp; Media</option>
+          <option value="Beauty & Personal Care">Beauty &amp; Personal Care</option>
+          <option value="Toys & Games">Toys &amp; Games</option>
+          <option value="Automotive">Automotive</option>
+          <option value="Software & Apps">Software &amp; Apps</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="productComments">Comments / Context</label>
+        <textarea id="productComments" placeholder="Describe key features, your experience, strengths, weaknesses, or any special instructions for the review…" aria-label="Review context and instructions"></textarea>
+      </div>
+    </div>
+
+    <!-- Settings Card -->
+    <div class="card">
+      <div class="card-title"><span class="card-title-icon">⚙️</span> Model &amp; Generation Settings</div>
+
+      <!-- Model -->
+      <div class="section-label">Language Model</div>
+      <div class="field">
+        <label for="modelSelect">OpenAI Model</label>
+        <div class="model-row">
+          <select id="modelSelect" aria-label="Select OpenAI model">
+            <option value="gpt-4o">⭐ GPT-4o (Recommended)</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          </select>
+          <div class="status-pill amber" id="modelStatus">
+            <span class="status-dot"></span>
+            Using defaults
+          </div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+      <div class="section-label">Sentiment Controls</div>
+
+      <!-- Sentiment sliders -->
+      <div class="slider-group" id="sg-overall">
+        <div class="slider-header">
+          <span class="slider-label-text">⭐ Overall Sentiment</span>
+          <span class="slider-sentiment-label" id="label-overall">Positive</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="70" id="sl-overall" oninput="updateSlider('overall',this.value)" aria-label="Overall sentiment">
+          <div class="slider-tooltip" id="tt-overall">70</div>
+        </div>
+      </div>
+
+      <div class="slider-group" id="sg-price">
+        <div class="slider-header">
+          <span class="slider-label-text">💰 Price / Value</span>
+          <span class="slider-sentiment-label" id="label-price">Positive</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="60" id="sl-price" oninput="updateSlider('price',this.value)" aria-label="Price value sentiment">
+          <div class="slider-tooltip" id="tt-price">60</div>
+        </div>
+      </div>
+
+      <div class="slider-group" id="sg-features">
+        <div class="slider-header">
+          <span class="slider-label-text">✨ Features</span>
+          <span class="slider-sentiment-label" id="label-features">Positive</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="75" id="sl-features" oninput="updateSlider('features',this.value)" aria-label="Features sentiment">
+          <div class="slider-tooltip" id="tt-features">75</div>
+        </div>
+      </div>
+
+      <div class="slider-group" id="sg-usability">
+        <div class="slider-header">
+          <span class="slider-label-text">🖐 Usability</span>
+          <span class="slider-sentiment-label" id="label-usability">Positive</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" value="65" id="sl-usability" oninput="updateSlider('usability',this.value)" aria-label="Usability sentiment">
+          <div class="slider-tooltip" id="tt-usability">65</div>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+      <div class="section-label">Style Controls</div>
+
+      <!-- Length slider -->
+      <div class="field step-slider-wrap">
+        <label>Review Length</label>
+        <input type="range" min="1" max="5" value="3" id="sl-length" step="1" oninput="updateStepSlider('length',this.value)" aria-label="Review length">
+        <div class="step-slider-labels" id="labels-length">
+          <span data-val="1">Tweet</span>
+          <span data-val="2">Brief</span>
+          <span data-val="3" class="active">Standard</span>
+          <span data-val="4">Detailed</span>
+          <span data-val="5">Epic</span>
+        </div>
+      </div>
+
+      <!-- Tone slider -->
+      <div class="field step-slider-wrap" style="margin-bottom:8px;">
+        <label>Tone / Style</label>
+        <input type="range" min="1" max="5" value="3" id="sl-tone" step="1" oninput="updateStepSlider('tone',this.value)" aria-label="Review tone">
+        <div class="step-slider-labels" id="labels-tone">
+          <span data-val="1">Casual</span>
+          <span data-val="2">Conversational</span>
+          <span data-val="3" class="active">Balanced</span>
+          <span data-val="4">Professional</span>
+          <span data-val="5">Academic</span>
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+
+      <!-- Generate button -->
+      <button class="generate-btn" id="generateBtn" onclick="generate()" aria-label="Generate review (Ctrl+Enter)">
+        <span id="generateBtnLabel">✦ Generate Review &nbsp;<kbd>⌘↵</kbd></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Panel / Output -->
+  <div class="right-col output-panel">
+    <div class="card">
+      <div class="output-header">
+        <div class="output-title">Generated Review</div>
+        <div class="output-actions">
+          <button class="icon-btn hidden" id="copyBtn" onclick="copyReview()" aria-label="Copy to clipboard" title="Copy">
+            📋<div class="tooltip">Copy</div>
+          </button>
+          <button class="icon-btn hidden" id="regenBtn" onclick="generate()" aria-label="Regenerate" title="Regenerate">
+            🔄<div class="tooltip">Regenerate</div>
+          </button>
+          <button class="icon-btn hidden" id="clearBtn" onclick="clearOutput()" aria-label="Clear" title="Clear">
+            ✕<div class="tooltip">Clear</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error box -->
+      <div class="error-box" id="errorBox"></div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">✦</div>
+        <div class="empty-title">Your review will appear here…</div>
+        <div class="empty-sub">Enter a product name and click Generate Review</div>
+      </div>
+
+      <!-- Skeleton loader -->
+      <div class="skeleton-wrap" id="skeletonWrap">
+        <div class="skeleton-line" style="width:60%;height:20px;margin-bottom:16px;"></div>
+        <div class="skeleton-line" style="width:100%;"></div>
+        <div class="skeleton-line" style="width:92%;"></div>
+        <div class="skeleton-line" style="width:97%;"></div>
+        <div class="skeleton-line" style="width:80%;margin-bottom:16px;"></div>
+        <div class="skeleton-line" style="width:100%;"></div>
+        <div class="skeleton-line" style="width:88%;"></div>
+        <div class="skeleton-line" style="width:95%;"></div>
+        <div class="skeleton-line" style="width:70%;"></div>
+      </div>
+
+      <!-- Review content -->
+      <div class="review-content" id="reviewContent">
+        <div class="review-product-badge">
+          <div class="review-product-name" id="outProductName"></div>
+          <div class="category-tag" id="outCategory"></div>
+        </div>
+        <div class="review-body" id="reviewBody"></div>
+        <div class="review-stats" id="reviewStats"></div>
+        <div class="review-meta" id="reviewMeta"></div>
+        <div class="ftc-banner active">⚠ This review was generated by AI and is for educational purposes only. Do not publish as a real consumer review (FTC Rule, Oct 2024).</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAbout()" aria-label="Close modal">✕</button>
+    <h2>About ReviewAI</h2>
+    <p class="modal-sub">An educational AI tool for exploring language model capabilities</p>
+    <p>This tool generates product reviews using OpenAI's language models. It is intended solely for <strong>educational and creative exploration</strong> — understanding how AI writes, experimenting with tone and sentiment, and studying LLM output quality.</p>
+    <h3>⚖️ FTC Rule — October 2024</h3>
+    <p>The FTC updated its guidelines in 2024 to require clear disclosure of AI-generated reviews. Publishing AI-generated reviews as authentic consumer reviews is prohibited. All output from this tool is clearly labeled as AI-generated.</p>
+    <h3>🤖 Ethical Use</h3>
+    <ul>
+      <li>Use this tool to learn about AI and natural language generation</li>
+      <li>Do not submit AI-generated reviews to retail sites or review platforms</li>
+      <li>Your API key is stored only in memory and never persisted anywhere</li>
+      <li>No usage data is collected by this app</li>
+    </ul>
+    <h3>🔗 Learn More</h3>
+    <p><a href="https://www.ftc.gov/news-events/news/press-releases/2024/08/ftc-announces-final-rule-banning-fake-reviews-testimonials" target="_blank" rel="noopener">FTC Rule on Fake Reviews →</a></p>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let apiKey = '';
+let modelListCached = null;
+let lastReviewText = '';
+let generating = false;
+
+const SENTIMENT_LABELS = v => {
+  const n = parseInt(v);
+  if (n <= 20) return 'Very Negative';
+  if (n <= 40) return 'Negative';
+  if (n <= 60) return 'Neutral';
+  if (n <= 80) return 'Positive';
+  return 'Very Positive';
+};
+
+const LENGTH_MAP = { 1: { label: 'Tweet', words: 80 }, 2: { label: 'Brief', words: 150 }, 3: { label: 'Standard', words: 300 }, 4: { label: 'Detailed', words: 500 }, 5: { label: 'Epic', words: 800 } };
+const TONE_MAP = { 1: 'casual and witty', 2: 'conversational and friendly', 3: 'balanced and authentic', 4: 'professional and informative', 5: 'academic and analytical' };
+
+// ===== API SECTION =====
+function toggleApiSection() {
+  const body = document.getElementById('apiBody');
+  const arrow = document.getElementById('apiArrow');
+  const toggle = document.getElementById('apiToggle');
+  const open = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+  toggle.setAttribute('aria-expanded', open);
+}
+
+function setApiKey() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) return;
+  fetchModels();
+}
+
+async function fetchModels() {
+  if (!apiKey) return;
+  if (modelListCached) { populateModelSelect(modelListCached); return; }
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/models', {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    });
+    if (!res.ok) throw new Error('Auth failed');
+    const data = await res.json();
+    const gptModels = (data.data || [])
+      .filter(m => m.id.startsWith('gpt-'))
+      .map(m => m.id);
+
+    const priority = ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'];
+    gptModels.sort((a, b) => {
+      const ai = priority.indexOf(a), bi = priority.indexOf(b);
+      if (ai >= 0 && bi >= 0) return ai - bi;
+      if (ai >= 0) return -1;
+      if (bi >= 0) return 1;
+      return b.localeCompare(a);
+    });
+    modelListCached = gptModels;
+    populateModelSelect(gptModels);
+    setModelStatus('green', '✓ Models loaded');
+    // Auto-collapse API section after success
+    document.getElementById('apiBody').classList.remove('open');
+    document.getElementById('apiArrow').classList.remove('open');
+  } catch {
+    setModelStatus('amber', 'Using defaults');
+  }
+}
+
+function populateModelSelect(models) {
+  const sel = document.getElementById('modelSelect');
+  sel.innerHTML = models.map((m, i) => {
+    const star = i === 0 ? '⭐ ' : '';
+    return `<option value="${m}">${star}${m}</option>`;
+  }).join('');
+}
+
+function setModelStatus(type, text) {
+  const pill = document.getElementById('modelStatus');
+  pill.className = `status-pill ${type}`;
+  pill.innerHTML = `<span class="status-dot"></span>${text}`;
+}
+
+// ===== SLIDER UPDATES =====
+function updateSlider(name, value) {
+  const tt = document.getElementById(`tt-${name}`);
+  const lbl = document.getElementById(`label-${name}`);
+  const input = document.getElementById(`sl-${name}`);
+  lbl.textContent = SENTIMENT_LABELS(value);
+  tt.textContent = value;
+  // Position tooltip
+  const pct = (value - 0) / 100;
+  const thumbW = 18;
+  const trackW = input.offsetWidth - thumbW;
+  tt.style.left = (thumbW / 2 + pct * trackW) + 'px';
+}
+
+function updateStepSlider(name, value) {
+  const labels = document.querySelectorAll(`#labels-${name} span`);
+  labels.forEach(s => s.classList.toggle('active', s.dataset.val === value));
+}
+
+// Init tooltip positions on load
+window.addEventListener('load', () => {
+  ['overall','price','features','usability'].forEach(n => {
+    const el = document.getElementById(`sl-${n}`);
+    if (el) updateSlider(n, el.value);
+  });
+});
+
+// ===== GENERATION =====
+async function generate() {
+  if (generating) return;
+
+  const productName = document.getElementById('productName').value.trim();
+  if (!productName) {
+    const inp = document.getElementById('productName');
+    inp.classList.add('error');
+    document.getElementById('productNameError').style.display = 'block';
+    inp.focus();
+    setTimeout(() => { inp.classList.remove('error'); }, 400);
+    return;
+  }
+  document.getElementById('productNameError').style.display = 'none';
+
+  if (!apiKey) {
+    showError('Please enter your OpenAI API key in the API Configuration section above.');
+    return;
+  }
+
+  const category = document.getElementById('productCategory').value;
+  const comments = document.getElementById('productComments').value.trim();
+  const model = document.getElementById('modelSelect').value;
+  const overallVal = document.getElementById('sl-overall').value;
+  const priceVal = document.getElementById('sl-price').value;
+  const featuresVal = document.getElementById('sl-features').value;
+  const usabilityVal = document.getElementById('sl-usability').value;
+  const lengthVal = document.getElementById('sl-length').value;
+  const toneVal = document.getElementById('sl-tone').value;
+
+  const wordCount = LENGTH_MAP[lengthVal].words;
+  const tone = TONE_MAP[toneVal];
+
+  const systemPrompt = `You are a product review writer. Write a ${tone} product review for "${productName}" (category: ${category}).
+
+Target length: approximately ${wordCount} words.
+
+Sentiment guidance:
+- Overall sentiment: ${SENTIMENT_LABELS(overallVal)} (${overallVal}/100)
+- Price/Value perception: ${SENTIMENT_LABELS(priceVal)} (${priceVal}/100)
+- Features enthusiasm: ${SENTIMENT_LABELS(featuresVal)} (${featuresVal}/100)
+- Usability satisfaction: ${SENTIMENT_LABELS(usabilityVal)} (${usabilityVal}/100)
+
+${comments ? `Additional reviewer context and instructions:\n${comments}\n` : ''}
+Format the review with markdown: use **bold** for product name and key phrases, use bullet points for pros/cons if appropriate for the length, and use a clear heading structure. Write in first-person as a real customer. Do not mention that this review is AI-generated.`;
+
+  setGenerating(true);
+  showSkeleton();
+  clearError();
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: systemPrompt }],
+        temperature: 0.85
+      })
+    });
+
+    if (res.status === 401) throw new Error('auth');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '';
+    if (!text) throw new Error('empty');
+
+    lastReviewText = text;
+    renderReview(text, productName, category, model, { overallVal, priceVal, featuresVal, usabilityVal, lengthVal, toneVal });
+  } catch (e) {
+    hideSkeleton();
+    showEmptyState();
+    if (e.message === 'auth') showError('API key invalid or expired. Please check your key in the API Configuration section.');
+    else if (e.message === 'empty') showError('The model returned an empty response. Try again.');
+    else showError('Could not connect. Check your internet connection and try again.');
+  } finally {
+    setGenerating(false);
+  }
+}
+
+function renderReview(text, productName, category, model, settings) {
+  hideSkeleton();
+  hideEmptyState();
+  clearError();
+
+  document.getElementById('outProductName').textContent = productName;
+  document.getElementById('outCategory').textContent = category;
+  document.getElementById('reviewBody').innerHTML = marked.parse(text);
+
+  const charCount = text.length;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const readMins = Math.max(1, Math.round(wordCount / 200));
+  document.getElementById('reviewStats').innerHTML = `<span>${charCount.toLocaleString()} chars</span><span>·</span><span>${wordCount.toLocaleString()} words</span><span>·</span><span>~${readMins} min read</span>`;
+
+  const { overallVal, priceVal, featuresVal, usabilityVal, lengthVal, toneVal } = settings;
+  document.getElementById('reviewMeta').innerHTML = `
+    <div class="meta-item"><strong>Model:</strong> ${model}</div>
+    <div class="meta-item"><strong>Length:</strong> ${LENGTH_MAP[lengthVal].label}</div>
+    <div class="meta-item"><strong>Tone:</strong> ${TONE_MAP[toneVal]}</div>
+    <div class="meta-item"><strong>Overall:</strong> ${overallVal}/100</div>
+    <div class="meta-item"><strong>Price:</strong> ${priceVal}/100</div>
+    <div class="meta-item"><strong>Features:</strong> ${featuresVal}/100</div>
+    <div class="meta-item"><strong>Usability:</strong> ${usabilityVal}/100</div>
+  `;
+
+  document.getElementById('reviewContent').classList.add('active');
+  ['copyBtn','regenBtn','clearBtn'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+}
+
+function setGenerating(v) {
+  generating = v;
+  const btn = document.getElementById('generateBtn');
+  const lbl = document.getElementById('generateBtnLabel');
+  btn.disabled = v;
+  if (v) {
+    lbl.innerHTML = 'Generating<span class="btn-dots"><span>.</span><span>.</span><span>.</span></span>';
+  } else {
+    lbl.innerHTML = '✦ Generate Review &nbsp;<kbd>⌘↵</kbd>';
+  }
+}
+
+// ===== SKELETON / STATES =====
+function showSkeleton() {
+  document.getElementById('skeletonWrap').classList.add('active');
+  hideEmptyState();
+  document.getElementById('reviewContent').classList.remove('active');
+}
+function hideSkeleton() { document.getElementById('skeletonWrap').classList.remove('active'); }
+function hideEmptyState() { document.getElementById('emptyState').style.display = 'none'; }
+function showEmptyState() { document.getElementById('emptyState').style.display = ''; }
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = '⚠ ' + msg;
+  box.classList.add('active');
+}
+function clearError() { document.getElementById('errorBox').classList.remove('active'); }
+
+// ===== COPY =====
+async function copyReview() {
+  try {
+    await navigator.clipboard.writeText(lastReviewText);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(() => {
+      btn.textContent = '📋';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+      btn.innerHTML = '📋<div class="tooltip">Copy</div>';
+    }, 1800);
+  } catch { showError('Could not copy to clipboard.'); }
+}
+
+// ===== CLEAR =====
+function clearOutput() {
+  document.getElementById('reviewContent').classList.remove('active');
+  showEmptyState();
+  hideSkeleton();
+  clearError();
+  lastReviewText = '';
+  ['copyBtn','regenBtn','clearBtn'].forEach(id => document.getElementById(id).classList.add('hidden'));
+}
+
+// ===== ABOUT MODAL =====
+function openAbout() { document.getElementById('aboutModal').classList.add('open'); }
+function closeAbout() { document.getElementById('aboutModal').classList.remove('open'); }
+document.getElementById('aboutModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('aboutModal')) closeAbout();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeAbout();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); }
+});
+
+// ===== INIT =====
+document.getElementById('apiKeyInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') setApiKey();
+});
+</script>
+</body>
+</html>
