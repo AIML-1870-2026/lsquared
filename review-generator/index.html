@@ -233,6 +233,48 @@ body::before {
 }
 .btn-small:hover { background: rgba(245,166,35,0.2); }
 
+/* Drop zone */
+.drop-zone {
+  border: 2px dashed var(--border-hover);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 12px;
+  position: relative;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--amber);
+  background: var(--amber-dim);
+}
+.drop-zone.dragover .drop-icon { transform: scale(1.2); }
+.drop-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.drop-icon { font-size: 22px; margin-bottom: 6px; transition: transform 0.2s; }
+.drop-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.drop-sub {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted2);
+}
+.drop-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted2);
+}
+.drop-divider::before, .drop-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
 .api-meta {
   margin-top: 8px;
   display: flex;
@@ -823,6 +865,14 @@ kbd {
           <span class="api-toggle-arrow" id="apiArrow">▼</span>
         </div>
         <div class="api-body" id="apiBody">
+          <!-- Drop zone -->
+          <div class="drop-zone" id="dropZone">
+            <input type="file" id="envFileInput" accept=".env,.txt" aria-label="Drop .env file">
+            <div class="drop-icon">📂</div>
+            <div class="drop-label">Drop your <code style="font-family:'JetBrains Mono',monospace;background:var(--surface2);padding:1px 5px;border-radius:3px;">.env</code> file here</div>
+            <div class="drop-sub">Reads OPENAI_API_KEY automatically</div>
+          </div>
+          <div class="drop-divider">or enter manually</div>
           <div class="api-key-row">
             <input type="password" class="api-key-input" id="apiKeyInput" placeholder="sk-..." aria-label="OpenAI API Key" autocomplete="off">
             <button class="btn-small" onclick="setApiKey()" id="connectBtn">Connect</button>
@@ -1401,6 +1451,58 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeAbout();
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); }
 });
+
+// ===== ENV FILE DROP =====
+function parseEnvKey(text) {
+  // Accepts: OPENAI_API_KEY=sk-..., OPENAI_KEY=sk-..., API_KEY=sk-..., or bare sk-...
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const match = trimmed.match(/^(?:OPENAI_API_KEY|OPENAI_KEY|API_KEY)\s*=\s*["']?([^\s"']+)["']?$/i);
+    if (match) return match[1];
+    // Bare key on its own line
+    if (/^sk-[A-Za-z0-9\-_]{20,}$/.test(trimmed)) return trimmed;
+  }
+  return null;
+}
+
+function handleEnvFile(file) {
+  if (!file) return;
+  const zone = document.getElementById('dropZone');
+  const reader = new FileReader();
+  reader.onload = e => {
+    const key = parseEnvKey(e.target.result);
+    if (!key) {
+      zone.style.borderColor = 'var(--red)';
+      document.getElementById('apiMeta').innerHTML = '❌ No OpenAI key found in file. Expected <code>OPENAI_API_KEY=sk-...</code>';
+      setTimeout(() => { zone.style.borderColor = ''; }, 2000);
+      return;
+    }
+    zone.style.borderColor = 'var(--green)';
+    zone.querySelector('.drop-icon').textContent = '✅';
+    zone.querySelector('.drop-label').textContent = `Loaded from ${file.name}`;
+    zone.querySelector('.drop-sub').textContent = key.slice(0, 7) + '…' + key.slice(-4);
+    document.getElementById('apiKeyInput').value = key;
+    if (key !== apiKey) modelListCached = null;
+    apiKey = key;
+    fetchModels();
+  };
+  reader.readAsText(file);
+}
+
+(function initDropZone() {
+  const zone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('envFileInput');
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    handleEnvFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', () => handleEnvFile(fileInput.files[0]));
+})();
 
 // ===== AUTOCOMPLETE =====
 const AC_PRODUCTS = [
