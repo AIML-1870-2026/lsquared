@@ -81,29 +81,54 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .grade-btn:hover:not(.active){border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 
 /* ── SUPPLY TAG INPUT ── */
+.supply-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.supply-count-badge{background:var(--navy);color:#fff;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:12px;display:none}
+.supply-count-badge.on{display:inline-block}
+.supply-clear-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:.72rem;font-weight:600;padding:2px 6px;border-radius:4px;transition:color .12s;display:none}
+.supply-clear-btn.on{display:inline-flex;align-items:center;gap:3px}
+.supply-clear-btn:hover{color:var(--red)}
+.supply-cat-tabs{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
+.supply-cat-tab{background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.72rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .12s;font-family:'Inter',sans-serif;white-space:nowrap}
+.supply-cat-tab:hover{border-color:var(--border2);color:var(--text2)}
+.supply-cat-tab.active{background:var(--navy);border-color:var(--navy);color:#fff}
 .supply-input-wrap{position:relative;margin-bottom:20px}
-.supply-search-box{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;min-height:52px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:text;transition:border-color .2s,box-shadow .2s}
-.supply-search-box:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.12)}
-.supply-tag{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;font-weight:500;white-space:nowrap;animation:tagIn .15s ease}
-@keyframes tagIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
-.supply-tag .tag-emoji{font-size:.95em}
-.supply-tag button{background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:.85rem;line-height:1;padding:0 1px;transition:color .1s}
-.supply-tag button:hover{color:#fff}
-.supply-search-input{flex:1;min-width:120px;background:none;border:none;outline:none;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--text);padding:2px 0}
+.supply-search-outer{display:flex;align-items:flex-start;background:var(--card);border:2px solid var(--border);border-radius:12px;cursor:text;transition:border-color .2s,box-shadow .2s;overflow:hidden}
+.supply-search-outer:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.1)}
+.supply-search-icon{padding:13px 0 13px 14px;color:var(--text3);flex-shrink:0;display:flex;align-items:flex-start;pointer-events:none}
+.supply-search-box{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:9px 10px 9px 8px;min-height:48px;flex:1;cursor:text}
+.supply-tag{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 8px 3px 10px;font-size:.75rem;font-weight:600;white-space:nowrap;animation:tagIn .15s ease;line-height:1.4}
+.supply-tag.cat-kitchen{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.supply-tag.cat-craft{background:#EDE9FE;color:#5B21B6;border:1px solid #DDD6FE}
+.supply-tag.cat-electronics{background:#DBEAFE;color:#1E40AF;border:1px solid #BFDBFE}
+.supply-tag.cat-outdoor{background:#DCFCE7;color:#14532D;border:1px solid #BBF7D0}
+.supply-tag.cat-custom{background:#F1F5F9;color:#334155;border:1px solid #CBD5E1}
+@keyframes tagIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
+.supply-tag .tag-emoji{font-size:.9em}
+.supply-tag button{background:none;border:none;cursor:pointer;font-size:.8rem;line-height:1;padding:0 2px;transition:opacity .1s;opacity:.5;margin-left:1px}
+.supply-tag button:hover{opacity:1}
+.supply-search-input{flex:1;min-width:120px;background:none;border:none;outline:none;font-family:'Inter',sans-serif;font-size:.875rem;color:var(--text);padding:3px 2px}
 .supply-search-input::placeholder{color:var(--text3)}
-.supply-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:50;overflow:hidden;display:none;max-height:240px;overflow-y:auto}
-.supply-dropdown.open{display:block;animation:dropIn .15s ease}
-@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.drop-category{padding:6px 12px 3px;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-top:1px solid var(--border)}
+.supply-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:1.5px solid var(--border);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,0.14),0 4px 12px rgba(0,0,0,0.07);z-index:50;overflow:hidden;display:none}
+.supply-dropdown.open{display:block;animation:dropIn .14s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drop-scroll{max-height:260px;overflow-y:auto}
+.drop-category{padding:8px 14px 4px;font-size:.62rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);background:var(--bg);border-top:1px solid var(--border);display:flex;align-items:center;gap:6px}
 .drop-category:first-child{border-top:none}
-.drop-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;transition:background .1s;font-size:.85rem}
-.drop-item:hover,.drop-item.highlighted{background:#F0FDF4}
-.drop-item .drop-emoji{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
-.drop-item .drop-name{flex:1;font-weight:500}
-.drop-item .drop-tip{font-size:.72rem;color:var(--text3);white-space:nowrap}
-.drop-item.selected{opacity:.45}
-.drop-item.selected::after{content:'✓';color:var(--teal);font-weight:700;margin-left:auto}
-.drop-empty{padding:20px;text-align:center;color:var(--text3);font-size:.85rem}
+.drop-cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.drop-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .08s;font-size:.85rem;position:relative}
+.drop-item:hover,.drop-item.highlighted{background:#F0FDF9}
+.drop-emoji-wrap{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;background:var(--bg)}
+.drop-item .drop-name{flex:1;font-weight:500;color:var(--text)}
+.drop-item .drop-name mark{background:none;color:var(--teal);font-weight:700}
+.drop-item .drop-tip{font-size:.7rem;color:var(--text3);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drop-item.is-selected .drop-name{color:var(--text3)}
+.drop-item.is-selected .check-mark{color:var(--teal);font-weight:700;font-size:.85rem;margin-left:4px;flex-shrink:0}
+.drop-add-custom{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;background:linear-gradient(135deg,#F0FDF4,#EFF6FF);border-top:1px solid var(--border);font-size:.84rem;font-weight:600;color:var(--teal);transition:background .1s}
+.drop-add-custom:hover{background:linear-gradient(135deg,#DCFCE7,#DBEAFE)}
+.drop-add-custom .add-icon{width:26px;height:26px;border-radius:7px;background:rgba(13,148,136,.12);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--teal);flex-shrink:0}
+.drop-empty{padding:20px;text-align:center;color:var(--text3);font-size:.84rem}
+.drop-hint{padding:8px 14px;font-size:.7rem;color:var(--text3);border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;background:var(--bg)}
+.drop-hint kbd{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1px 5px;font-size:.65rem;font-family:'JetBrains Mono',monospace}
 
 /* ── COMBOS ── */
 .combos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:6px}
@@ -281,15 +306,41 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
       </div>
 
       <!-- SUPPLIES -->
-      <div class="sec-label" style="margin-bottom:8px">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-        Supplies
-      </div>
-      <div class="supply-input-wrap" id="supplyWrap">
-        <div class="supply-search-box" id="supplyBox" onclick="document.getElementById('supplySearchInput').focus()">
-          <input type="text" id="supplySearchInput" class="supply-search-input" placeholder="Search or type a supply…" autocomplete="off" aria-label="Search supplies" aria-haspopup="listbox">
+      <div class="supply-section-header">
+        <div class="sec-label" style="margin-bottom:0">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+          Supplies
         </div>
-        <div class="supply-dropdown" id="supplyDropdown" role="listbox"></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="supply-count-badge" id="supplyCount">0</span>
+          <button class="supply-clear-btn" id="supplyClearAll" aria-label="Clear all supplies">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Clear all
+          </button>
+        </div>
+      </div>
+
+      <!-- Category filter tabs -->
+      <div class="supply-cat-tabs" id="supplyCatTabs">
+        <button class="supply-cat-tab active" data-filter="all">All</button>
+        <button class="supply-cat-tab" data-filter="kitchen">🍳 Kitchen</button>
+        <button class="supply-cat-tab" data-filter="craft">✂️ Craft</button>
+        <button class="supply-cat-tab" data-filter="electronics">⚡ Electronics</button>
+        <button class="supply-cat-tab" data-filter="outdoor">🌿 Outdoor</button>
+      </div>
+
+      <div class="supply-input-wrap" id="supplyWrap">
+        <div class="supply-search-outer" id="supplySearchOuter" onclick="document.getElementById('supplySearchInput').focus()">
+          <span class="supply-search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <div class="supply-search-box" id="supplyBox">
+            <input type="text" id="supplySearchInput" class="supply-search-input" placeholder="Search supplies or type anything custom…" autocomplete="off" aria-label="Search supplies" aria-haspopup="listbox" spellcheck="false">
+          </div>
+        </div>
+        <div class="supply-dropdown" id="supplyDropdown" role="listbox">
+          <div class="drop-scroll" id="dropScroll"></div>
+        </div>
       </div>
 
       <!-- COMBOS -->
@@ -474,37 +525,65 @@ document.querySelectorAll('.grade-btn').forEach(btn => {
 // ─────────────────────────────────────────────
 let selectedSupplies = [];
 let dropHighlight = -1;
+let activeCatFilter = 'all';
 
-const supplyBox = document.getElementById('supplyBox');
-const supplyInput = document.getElementById('supplySearchInput');
-const dropdown = document.getElementById('supplyDropdown');
+const supplyBox    = document.getElementById('supplyBox');
+const supplyInput  = document.getElementById('supplySearchInput');
+const dropdown     = document.getElementById('supplyDropdown');
+const dropScroll   = document.getElementById('dropScroll');
+
+// Category metadata
+const CAT_META = {
+  'Kitchen':     { key:'kitchen',    dot:'#F59E0B', tagClass:'cat-kitchen' },
+  'Craft/Office':{ key:'craft',      dot:'#8B5CF6', tagClass:'cat-craft' },
+  'Electronics': { key:'electronics',dot:'#3B82F6', tagClass:'cat-electronics' },
+  'Outdoor':     { key:'outdoor',    dot:'#10B981', tagClass:'cat-outdoor' },
+};
 
 function getSupplyMeta(name) {
   return ALL_SUPPLIES.find(s => s.name.toLowerCase() === name.toLowerCase());
 }
 
-function renderTags() {
+function tagClass(name) {
+  const m = getSupplyMeta(name);
+  if (!m) return 'cat-custom';
+  return CAT_META[m.cat]?.tagClass || 'cat-custom';
+}
+
+function updateSupplyUI() {
   // Remove existing tags
   supplyBox.querySelectorAll('.supply-tag').forEach(t => t.remove());
   selectedSupplies.forEach(name => {
     const meta = getSupplyMeta(name);
-    const emoji = meta ? meta.emoji : '🧪';
+    const emoji = meta ? meta.emoji : '📦';
+    const cls = tagClass(name);
     const tag = document.createElement('span');
-    tag.className = 'supply-tag';
-    tag.innerHTML = `<span class="tag-emoji">${emoji}</span>${name}<button aria-label="Remove ${name}" data-name="${name}">×</button>`;
+    tag.className = `supply-tag ${cls}`;
+    tag.innerHTML = `<span class="tag-emoji">${emoji}</span>${escHtml(name)}<button aria-label="Remove ${escHtml(name)}" data-name="${escHtml(name)}">×</button>`;
     tag.querySelector('button').addEventListener('click', e => {
       e.stopPropagation();
       removeSupply(name);
     });
     supplyBox.insertBefore(tag, supplyInput);
   });
+
+  // Badge & clear btn
+  const count = selectedSupplies.length;
+  const badge = document.getElementById('supplyCount');
+  const clearBtn = document.getElementById('supplyClearAll');
+  badge.textContent = count;
+  badge.classList.toggle('on', count > 0);
+  clearBtn.classList.toggle('on', count > 0);
+
   updateLegend();
 }
 
 function addSupply(name) {
-  if (!selectedSupplies.includes(name)) {
-    selectedSupplies.push(name);
-    renderTags();
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  if (!selectedSupplies.map(s=>s.toLowerCase()).includes(trimmed.toLowerCase())) {
+    selectedSupplies.push(trimmed);
+    updateSupplyUI();
   }
   supplyInput.value = '';
   renderDropdown('');
@@ -512,75 +591,129 @@ function addSupply(name) {
 }
 
 function removeSupply(name) {
-  selectedSupplies = selectedSupplies.filter(s => s !== name);
-  renderTags();
+  selectedSupplies = selectedSupplies.filter(s => s.toLowerCase() !== name.toLowerCase());
+  updateSupplyUI();
   renderDropdown(supplyInput.value);
+}
+
+// Highlight matching substring in text
+function highlightMatch(text, query) {
+  if (!query) return escHtml(text);
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return escHtml(text);
+  return escHtml(text.slice(0,idx)) + '<mark>' + escHtml(text.slice(idx, idx+query.length)) + '</mark>' + escHtml(text.slice(idx+query.length));
 }
 
 function renderDropdown(query) {
   dropHighlight = -1;
-  const q = query.toLowerCase().trim();
-  let filtered = q
-    ? ALL_SUPPLIES.filter(s => s.name.includes(q) || s.cat.toLowerCase().includes(q))
-    : ALL_SUPPLIES;
+  const q = query.trim();
+  const ql = q.toLowerCase();
 
-  if (!filtered.length && q) {
-    dropdown.innerHTML = `<div class="drop-empty">No match — press Enter to add "${escHtml(query)}"</div>`;
-    dropdown.classList.add('open');
-    return;
-  }
-  if (!q && !filtered.length) { dropdown.classList.remove('open'); return; }
-
-  // Group by category
-  const cats = {};
-  filtered.forEach(s => { (cats[s.cat] = cats[s.cat] || []).push(s); });
+  // Filter by search query
+  let list = ALL_SUPPLIES.filter(s => {
+    const matchQuery = !q || s.name.toLowerCase().includes(ql) || s.cat.toLowerCase().includes(ql) || s.tip.toLowerCase().includes(ql);
+    const matchCat = activeCatFilter === 'all' || (CAT_META[s.cat]?.key === activeCatFilter);
+    return matchQuery && matchCat;
+  });
 
   let html = '';
-  Object.entries(cats).forEach(([cat, items]) => {
-    html += `<div class="drop-category">${cat}</div>`;
-    items.forEach(s => {
-      const sel = selectedSupplies.includes(s.name);
-      html += `<div class="drop-item${sel?' selected':''}" data-name="${escHtml(s.name)}" role="option" aria-selected="${sel}">
-        <span class="drop-emoji">${s.emoji}</span>
-        <span class="drop-name">${escHtml(s.name)}</span>
-        <span class="drop-tip">${sel?'added':escHtml(s.tip.slice(0,32)+'…')}</span>
-      </div>`;
-    });
-  });
+  const cats = {};
+  list.forEach(s => { (cats[s.cat] = cats[s.cat]||[]).push(s); });
 
-  dropdown.innerHTML = html;
+  if (!Object.keys(cats).length && !q) {
+    html = '<div class="drop-empty">No supplies in this category</div>';
+  } else {
+    Object.entries(cats).forEach(([cat, items]) => {
+      const cm = CAT_META[cat] || {dot:'#9CA3AF'};
+      html += `<div class="drop-category"><span class="drop-cat-dot" style="background:${cm.dot}"></span>${cat}</div>`;
+      items.forEach(s => {
+        const sel = selectedSupplies.map(x=>x.toLowerCase()).includes(s.name.toLowerCase());
+        const nameHtml = highlightMatch(s.name, q);
+        html += `<div class="drop-item${sel?' is-selected':''}" data-name="${escHtml(s.name)}" role="option" aria-selected="${sel}">
+          <div class="drop-emoji-wrap" style="background:${sel?'#F0FDF4':'var(--bg)'}">${s.emoji}</div>
+          <span class="drop-name">${nameHtml}</span>
+          ${sel ? '<span class="check-mark">✓</span>' : `<span class="drop-tip">${escHtml(s.tip.slice(0,40))}…</span>`}
+        </div>`;
+      });
+    });
+  }
+
+  // Always show "Add custom" row when there's a query that doesn't exactly match
+  const exactMatch = ALL_SUPPLIES.some(s => s.name.toLowerCase() === ql);
+  const alreadyAdded = selectedSupplies.map(x=>x.toLowerCase()).includes(ql);
+  if (q && !exactMatch && !alreadyAdded) {
+    html += `<div class="drop-add-custom" id="dropAddCustom" data-name="${escHtml(q)}">
+      <div class="add-icon">+</div>
+      <span>Add <strong>"${escHtml(q)}"</strong> as custom supply</span>
+    </div>`;
+  }
+
+  html += `<div class="drop-hint"><kbd>↑↓</kbd> navigate &nbsp;·&nbsp; <kbd>Enter</kbd> add &nbsp;·&nbsp; <kbd>Esc</kbd> close</div>`;
+
+  dropScroll.innerHTML = html;
   dropdown.classList.add('open');
 
-  dropdown.querySelectorAll('.drop-item:not(.selected)').forEach(item => {
-    item.addEventListener('mousedown', e => {
-      e.preventDefault();
-      addSupply(item.dataset.name);
-    });
+  // Bind item clicks
+  dropScroll.querySelectorAll('.drop-item:not(.is-selected)').forEach(item => {
+    item.addEventListener('mousedown', e => { e.preventDefault(); addSupply(item.dataset.name); });
   });
+  const customRow = document.getElementById('dropAddCustom');
+  if (customRow) {
+    customRow.addEventListener('mousedown', e => { e.preventDefault(); addSupply(customRow.dataset.name); });
+  }
 }
+
+function closeDropdown() { dropdown.classList.remove('open'); }
+
+// Category tab filter
+document.getElementById('supplyCatTabs').querySelectorAll('.supply-cat-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.supply-cat-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    activeCatFilter = tab.dataset.filter;
+    renderDropdown(supplyInput.value);
+    supplyInput.focus();
+  });
+});
+
+// Clear all
+document.getElementById('supplyClearAll').addEventListener('click', () => {
+  selectedSupplies = [];
+  updateSupplyUI();
+  closeDropdown();
+  showToast('All supplies cleared');
+});
 
 supplyInput.addEventListener('focus', () => renderDropdown(supplyInput.value));
 supplyInput.addEventListener('input', () => renderDropdown(supplyInput.value));
 supplyInput.addEventListener('keydown', e => {
-  const items = [...dropdown.querySelectorAll('.drop-item:not(.selected)')];
+  const selectableItems = [...dropScroll.querySelectorAll('.drop-item:not(.is-selected), .drop-add-custom')];
   if (e.key === 'ArrowDown') {
-    e.preventDefault(); dropHighlight = Math.min(dropHighlight+1, items.length-1);
-    items.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+    e.preventDefault();
+    dropHighlight = Math.min(dropHighlight+1, selectableItems.length-1);
+    selectableItems.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+    selectableItems[dropHighlight]?.scrollIntoView({block:'nearest'});
   } else if (e.key === 'ArrowUp') {
-    e.preventDefault(); dropHighlight = Math.max(dropHighlight-1, 0);
-    items.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+    e.preventDefault();
+    dropHighlight = Math.max(dropHighlight-1, 0);
+    selectableItems.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+    selectableItems[dropHighlight]?.scrollIntoView({block:'nearest'});
   } else if (e.key === 'Enter') {
     e.preventDefault();
-    if (dropHighlight >= 0 && items[dropHighlight]) addSupply(items[dropHighlight].dataset.name);
-    else if (supplyInput.value.trim()) addSupply(supplyInput.value.trim());
+    if (dropHighlight >= 0 && selectableItems[dropHighlight]) {
+      addSupply(selectableItems[dropHighlight].dataset.name);
+    } else if (supplyInput.value.trim()) {
+      addSupply(supplyInput.value.trim());
+    }
   } else if (e.key === 'Backspace' && !supplyInput.value && selectedSupplies.length) {
     removeSupply(selectedSupplies[selectedSupplies.length-1]);
   } else if (e.key === 'Escape') {
-    dropdown.classList.remove('open');
+    closeDropdown();
   }
 });
 document.addEventListener('click', e => {
-  if (!document.getElementById('supplyWrap').contains(e.target)) dropdown.classList.remove('open');
+  if (!document.getElementById('supplyWrap').contains(e.target) &&
+      !document.getElementById('supplyCatTabs').contains(e.target)) closeDropdown();
 });
 
 // ─────────────────────────────────────────────
@@ -595,9 +728,9 @@ COMBOS.forEach(combo => {
   card.setAttribute('aria-label',`Load ${combo.name} combo`);
   card.innerHTML = `<span class="combo-icon">${combo.icon}</span><div class="combo-name">${combo.name}</div><div class="combo-supplies">${combo.supplies.join(' · ')}</div>`;
   card.addEventListener('click', () => {
-    combo.supplies.forEach(s => { if (!selectedSupplies.includes(s)) selectedSupplies.push(s); });
-    renderTags();
-    dropdown.classList.remove('open');
+    combo.supplies.forEach(s => { if (!selectedSupplies.map(x=>x.toLowerCase()).includes(s.toLowerCase())) selectedSupplies.push(s); });
+    updateSupplyUI();
+    closeDropdown();
     showToast(`✨ Loaded "${combo.name}" combo`);
   });
   card.addEventListener('keypress', e => { if (e.key==='Enter') card.click(); });
