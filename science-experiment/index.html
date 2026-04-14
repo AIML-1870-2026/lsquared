@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Science Experiment Generator ⚗️</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F4EF;
+    --text: #1B2A3B;
+    --blue: #2A7FBF;
+    --teal: #3ABFB0;
+    --orange: #E8834A;
+    --green: #4CAF7A;
+    --card: #FFFFFF;
+    --border: #D8D0C4;
+    --shadow: 0 2px 12px rgba(27,42,59,0.08);
+    --shadow-hover: 0 6px 20px rgba(27,42,59,0.14);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ─── HEADER ─── */
+  .site-header {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--text);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .site-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  .site-header h1 span { color: var(--teal); }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .key-badge {
+    display: none; align-items: center; gap: 6px;
+    background: var(--green); color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; padding: 4px 10px; border-radius: 20px;
+  }
+  .key-badge.visible { display: flex; }
+  .btn-icon {
+    background: rgba(255,255,255,0.12); border: none; cursor: pointer;
+    color: #fff; border-radius: 8px; padding: 8px 12px;
+    font-size: 1.1rem; transition: background 0.2s;
+  }
+  .btn-icon:hover { background: rgba(255,255,255,0.22); }
+
+  /* ─── MAIN LAYOUT ─── */
+  .app-wrap {
+    max-width: 900px; margin: 0 auto;
+    padding: 32px 20px;
+    display: flex; gap: 24px;
+  }
+  .main-col { flex: 1; min-width: 0; }
+  .sidebar {
+    width: 260px; flex-shrink: 0;
+    display: flex; flex-direction: column; gap: 0;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card); border-radius: 12px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+    padding: 24px;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-hover); }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 600;
+    color: var(--text); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* ─── FORM ─── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--blue);
+  }
+  .form-group select, .form-group textarea {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.95rem; color: var(--text);
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    width: 100%;
+  }
+  .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(58,191,176,0.18);
+  }
+  .form-group textarea {
+    resize: vertical; min-height: 100px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem; line-height: 1.6;
+  }
+
+  /* ─── SUPPLY CHIPS ─── */
+  .chips-section { margin-bottom: 20px; }
+  .chips-section .section-label {
+    font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--blue); margin-bottom: 10px;
+  }
+  .category-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .cat-tab {
+    background: none; border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 3px 12px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.8rem; cursor: pointer; color: var(--text);
+    transition: all 0.15s;
+  }
+  .cat-tab.active, .cat-tab:hover {
+    background: var(--teal); border-color: var(--teal); color: #fff;
+  }
+  .chip-grid {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 20px; padding: 4px 12px;
+    font-size: 0.82rem; cursor: pointer; user-select: none;
+    transition: all 0.15s; position: relative;
+    color: var(--text);
+  }
+  .chip:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); }
+  .chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .chip-tooltip {
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--text); color: #fff;
+    font-size: 0.72rem; padding: 5px 9px; border-radius: 6px;
+    white-space: nowrap; pointer-events: none;
+    opacity: 0; transition: opacity 0.15s;
+    z-index: 10;
+    font-family: 'Source Serif 4', serif;
+  }
+  .chip:hover .chip-tooltip { opacity: 1; }
+
+  /* ─── GENERATE BUTTON ─── */
+  .btn-generate {
+    width: 100%;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+    color: #fff; border: none; border-radius: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; font-weight: 600;
+    padding: 14px 24px; cursor: pointer;
+    position: relative; overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 14px rgba(42,127,191,0.3);
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(42,127,191,0.4); }
+  .btn-generate:active { transform: translateY(0); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .ripple {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+  }
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* ─── LOADING BEAKER ─── */
+  .loading-wrap {
+    display: none; flex-direction: column; align-items: center;
+    padding: 36px; gap: 16px;
+  }
+  .loading-wrap.visible { display: flex; }
+  .loading-wrap p {
+    color: var(--blue); font-style: italic; font-size: 0.95rem;
+  }
+  .beaker-svg { width: 60px; height: 72px; }
+  .bubble {
+    animation: rise 1.5s ease-in infinite;
+    opacity: 0;
+  }
+  .bubble:nth-child(1) { animation-delay: 0s; }
+  .bubble:nth-child(2) { animation-delay: 0.5s; }
+  .bubble:nth-child(3) { animation-delay: 1s; }
+  @keyframes rise {
+    0%   { transform: translateY(0); opacity: 0.8; }
+    100% { transform: translateY(-30px); opacity: 0; }
+  }
+
+  /* ─── DIFFICULTY BADGE ─── */
+  .difficulty-badge {
+    display: none;
+    background: linear-gradient(135deg, #e8f4fb 0%, #e8fbf9 100%);
+    border: 1.5px solid var(--teal);
+    border-radius: 12px; padding: 16px 20px;
+    margin-bottom: 20px;
+    animation: slideIn 0.4s ease;
+  }
+  .difficulty-badge.visible { display: block; }
+  .badge-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem; font-weight: 600;
+    color: var(--teal); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .badge-rows { display: flex; gap: 20px; flex-wrap: wrap; }
+  .badge-item { display: flex; flex-direction: column; gap: 4px; }
+  .badge-label {
+    font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #888; font-weight: 600;
+  }
+  .badge-stars { font-size: 1.1rem; letter-spacing: 2px; }
+
+  /* ─── RESULT ─── */
+  .result-section {
+    display: none;
+    animation: slideIn 0.5s ease;
+  }
+  .result-section.visible { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .result-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .btn-action {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.88rem; cursor: pointer; color: var(--text);
+    transition: all 0.15s;
+  }
+  .btn-action:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); }
+  .experiment-content {
+    font-family: 'Source Serif 4', serif;
+    line-height: 1.75;
+  }
+  .experiment-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; color: var(--blue);
+    margin: 0 0 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--teal);
+  }
+  .experiment-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; color: var(--text);
+    margin: 20px 0 8px;
+  }
+  .experiment-content p { margin-bottom: 12px; }
+  .experiment-content ul, .experiment-content ol {
+    padding-left: 22px; margin-bottom: 12px;
+  }
+  .experiment-content li { margin-bottom: 6px; }
+  .experiment-content strong { color: var(--blue); }
+  .experiment-content code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--bg); padding: 1px 5px;
+    border-radius: 4px; border: 1px solid var(--border);
+  }
+
+  /* ─── SUBSTITUTIONS ─── */
+  .substitutions-section {
+    display: none; margin-top: 20px;
+    animation: slideIn 0.4s ease;
+  }
+  .substitutions-section.visible { display: block; }
+  .collapsible-toggle {
+    width: 100%; background: none; border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; font-family: 'Source Serif 4', serif;
+    font-size: 0.92rem; color: var(--text);
+    transition: all 0.15s;
+  }
+  .collapsible-toggle:hover { border-color: var(--orange); color: var(--orange); }
+  .collapsible-toggle .arrow { transition: transform 0.2s; }
+  .collapsible-toggle.open .arrow { transform: rotate(180deg); }
+  .collapsible-body { display: none; padding-top: 12px; }
+  .collapsible-body.open { display: block; animation: slideIn 0.3s ease; }
+  .sub-card {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;
+    font-size: 0.9rem;
+  }
+  .sub-card strong { color: var(--orange); }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar-header {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 600;
+    color: var(--text); padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 12px 12px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .saved-list {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    overflow: hidden;
+    max-height: 520px; overflow-y: auto;
+  }
+  .saved-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  }
+  .saved-item:last-child { border-bottom: none; }
+  .saved-item:hover { background: #f0f8ff; }
+  .saved-item-info { flex: 1; min-width: 0; }
+  .saved-item-title {
+    font-size: 0.88rem; font-weight: 600; color: var(--blue);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .saved-item-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
+  .btn-delete {
+    background: none; border: none; cursor: pointer;
+    color: #ccc; font-size: 0.9rem; padding: 2px 4px;
+    border-radius: 4px; flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .btn-delete:hover { color: #e55; }
+  .empty-saved {
+    padding: 24px 16px; text-align: center;
+    color: #aaa; font-size: 0.85rem; font-style: italic;
+  }
+  .supply-legend {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+    margin-top: 16px;
+  }
+  .supply-legend h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem; font-weight: 600;
+    color: var(--text); margin-bottom: 10px;
+  }
+  .legend-items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .legend-item {
+    font-size: 0.82rem; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 3px 10px;
+  }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(27,42,59,0.55); z-index: 200;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 14px;
+    padding: 28px; max-width: 420px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+  }
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; color: var(--text);
+    margin-bottom: 6px;
+  }
+  .modal p { font-size: 0.88rem; color: #666; margin-bottom: 18px; line-height: 1.5; }
+  .modal a { color: var(--blue); }
+  .input-reveal { position: relative; }
+  .input-reveal input {
+    width: 100%; padding: 10px 40px 10px 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text); outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-reveal input:focus { border-color: var(--teal); }
+  .toggle-reveal {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: #888; font-size: 1rem;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+  .btn-primary {
+    background: var(--blue); color: #fff; border: none;
+    border-radius: 8px; padding: 9px 20px;
+    font-family: 'Source Serif 4', serif; font-size: 0.92rem;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .btn-primary:hover { background: #1e6aa8; }
+  .btn-secondary {
+    background: none; color: var(--text); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 9px 20px;
+    font-family: 'Source Serif 4', serif; font-size: 0.92rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-secondary:hover { border-color: var(--text); }
+
+  /* ─── TOAST ─── */
+  .toast-container {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 300; display: flex; flex-direction: column; gap: 8px; align-items: center;
+  }
+  .toast {
+    background: var(--text); color: #fff;
+    padding: 10px 20px; border-radius: 8px;
+    font-size: 0.88rem; font-family: 'Source Serif 4', serif;
+    box-shadow: var(--shadow-hover);
+    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  /* ─── ERROR ─── */
+  .error-msg {
+    display: none; background: #fff0e8; border: 1.5px solid var(--orange);
+    border-radius: 10px; padding: 14px 18px; margin-top: 16px;
+    color: var(--orange); font-size: 0.92rem;
+  }
+  .error-msg.visible { display: block; animation: slideIn 0.3s ease; }
+
+  /* ─── PRINT WORKSHEET ─── */
+  @media print {
+    body > *:not(#print-worksheet) { display: none !important; }
+    #print-worksheet { display: block !important; }
+  }
+  #print-worksheet {
+    display: none;
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+
+  /* ─── FADE IN ON LOAD ─── */
+  .fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .fade-in:nth-child(1) { animation-delay: 0.1s; }
+  .fade-in:nth-child(2) { animation-delay: 0.25s; }
+  .fade-in:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 768px) {
+    .app-wrap { flex-direction: column; }
+    .sidebar { width: 100%; }
+    .form-grid { grid-template-columns: 1fr; }
+    .saved-list { max-height: 280px; }
+  }
+  @media (max-width: 480px) {
+    .site-header h1 { font-size: 1.1rem; }
+    .chip-grid { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    .app-wrap { padding: 16px 12px; }
+    .card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <h1>⚗️ <span>Science</span> Experiment Generator</h1>
+  <div class="header-actions">
+    <span class="key-badge" id="keyBadge" aria-live="polite">✓ Key set</span>
+    <button class="btn-icon" id="settingsBtn" aria-label="API Key Settings" title="API Key Settings">⚙️</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="app-wrap">
+  <div class="main-col">
+
+    <!-- FORM CARD -->
+    <div class="card fade-in" style="margin-bottom:20px;">
+      <h2 class="card-title">🔬 Configure Your Experiment</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="gradeSelect">Grade Level</label>
+          <select id="gradeSelect" aria-label="Select grade level">
+            <option value="">— select —</option>
+            <option value="K–2">K–2 (Kindergarten–2nd Grade)</option>
+            <option value="3–5">3–5 (3rd–5th Grade)</option>
+            <option value="6–8">6–8 (Middle School)</option>
+            <option value="9–12">9–12 (High School)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="suppliesInput">Available Supplies <span style="color:#aaa;font-weight:400;text-transform:none">(one per line)</span></label>
+          <textarea id="suppliesInput" rows="4" placeholder="water&#10;baking soda&#10;vinegar&#10;balloons" aria-label="Enter supplies, one per line"></textarea>
+        </div>
+      </div>
+
+      <!-- SUPPLY CHIPS -->
+      <div class="chips-section">
+        <div class="section-label">⚡ Quick-Add Supplies</div>
+        <div class="category-tabs" id="categoryTabs" role="tablist"></div>
+        <div class="chip-grid" id="chipGrid" role="list"></div>
+      </div>
+
+      <button class="btn-generate" id="generateBtn" aria-label="Generate science experiment">
+        Generate Experiment ⚗️
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-wrap" id="loadingWrap" aria-live="polite" aria-label="Generating experiment">
+      <svg class="beaker-svg" viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="22" y="2" width="16" height="22" rx="2" fill="#2A7FBF" opacity="0.3"/>
+        <rect x="23" y="3" width="14" height="20" rx="1" fill="#2A7FBF" opacity="0.15"/>
+        <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" fill="#2A7FBF" opacity="0.2"/>
+        <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" stroke="#2A7FBF" stroke-width="2" fill="none"/>
+        <path d="M14 52 Q30 46 46 52" stroke="#3ABFB0" stroke-width="2" fill="none" opacity="0.6"/>
+        <line x1="22" y1="2" x2="22" y2="26" stroke="#2A7FBF" stroke-width="2"/>
+        <line x1="38" y1="2" x2="38" y2="26" stroke="#2A7FBF" stroke-width="2"/>
+        <line x1="20" y1="2" x2="40" y2="2" stroke="#2A7FBF" stroke-width="2" stroke-linecap="round"/>
+        <circle class="bubble" cx="24" cy="50" r="3" fill="#3ABFB0" opacity="0.7"/>
+        <circle class="bubble" cx="30" cy="44" r="2.5" fill="#3ABFB0" opacity="0.7"/>
+        <circle class="bubble" cx="36" cy="48" r="2" fill="#3ABFB0" opacity="0.7"/>
+      </svg>
+      <p>Designing your experiment with AI…</p>
+    </div>
+
+    <!-- ERROR -->
+    <div class="error-msg" id="errorMsg" role="alert"></div>
+
+    <!-- RESULT SECTION -->
+    <div class="result-section" id="resultSection">
+      <!-- DIFFICULTY BADGE -->
+      <div class="difficulty-badge" id="difficultyBadge">
+        <div class="badge-title">📊 Difficulty Profile</div>
+        <div class="badge-rows" id="badgeRows"></div>
+      </div>
+
+      <!-- RESULT CARD -->
+      <div class="card" id="resultCard">
+        <div class="result-actions">
+          <button class="btn-action" id="saveBtn" aria-label="Save this experiment">💾 Save Experiment</button>
+          <button class="btn-action" id="printBtn" aria-label="Print observation worksheet">🖨 Print Worksheet</button>
+        </div>
+        <div class="experiment-content" id="experimentContent" aria-live="polite"></div>
+      </div>
+
+      <!-- SUBSTITUTIONS -->
+      <div class="substitutions-section" id="subsSection">
+        <button class="collapsible-toggle" id="subsToggle" aria-expanded="false" aria-controls="subsBody">
+          <span>🔄 Can't find a supply? Try these substitutions</span>
+          <span class="arrow">▼</span>
+        </button>
+        <div class="collapsible-body" id="subsBody">
+          <div id="subsContent"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="Saved experiments">
+    <div class="sidebar-header">📚 Saved Experiments</div>
+    <div class="saved-list" id="savedList"></div>
+
+    <!-- SUPPLY LEGEND -->
+    <div class="supply-legend" id="supplyLegend" style="display:none;">
+      <h4>🧪 Current Supplies</h4>
+      <div class="legend-items" id="legendItems"></div>
+    </div>
+  </aside>
+</main>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 id="modalTitle">⚙️ API Key Settings</h2>
+    <p>
+      Enter your Anthropic API key to use the experiment generator.
+      Your key is stored only in memory for this session — never saved to disk.<br><br>
+      Don't have a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get one at console.anthropic.com →</a>
+    </p>
+    <div class="input-reveal">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." aria-label="Anthropic API key">
+      <button class="toggle-reveal" id="toggleReveal" aria-label="Toggle API key visibility">👁</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="clearKeyBtn">Clear Key</button>
+      <button class="btn-secondary" id="closeModalBtn">Cancel</button>
+      <button class="btn-primary" id="saveKeyBtn">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+<!-- PRINT WORKSHEET (hidden, shown only on print) -->
+<div id="print-worksheet"></div>
+
+<script>
+// ─── SUPPLY CHIP DATA ───
+const SUPPLIES = {
+  Kitchen: [
+    { emoji: '💧', name: 'water', tip: 'Universal solvent, used in most experiments' },
+    { emoji: '🍶', name: 'vinegar', tip: 'Weak acid, great for acid-base reactions' },
+    { emoji: '🧂', name: 'baking soda', tip: 'Base (sodium bicarbonate) for reactions' },
+    { emoji: '🧂', name: 'salt', tip: 'Electrolyte, affects freezing and conductivity' },
+    { emoji: '🍬', name: 'sugar', tip: 'Carbohydrate, great for density experiments' },
+    { emoji: '🍋', name: 'lemon juice', tip: 'Citric acid, natural indicator' },
+    { emoji: '🎨', name: 'food coloring', tip: 'Visualize diffusion and mixing' },
+    { emoji: '🧴', name: 'dish soap', tip: 'Surfactant, lowers water surface tension' },
+    { emoji: '🌽', name: 'cornstarch', tip: 'Non-Newtonian fluid when mixed with water' },
+  ],
+  'Craft/Office': [
+    { emoji: '📄', name: 'paper', tip: 'For chromatography, absorption tests' },
+    { emoji: '🖊', name: 'tape', tip: 'Adhesion and static electricity experiments' },
+    { emoji: '✂️', name: 'scissors', tip: 'Cutting tool for model-making' },
+    { emoji: '🔵', name: 'rubber bands', tip: 'Study elasticity and potential energy' },
+    { emoji: '🎈', name: 'balloons', tip: 'Air pressure, static electricity, lungs model' },
+    { emoji: '🖊', name: 'markers', tip: 'Ink for chromatography' },
+    { emoji: '📦', name: 'cardboard', tip: 'Structural material, model building' },
+    { emoji: '🧵', name: 'string', tip: 'Pendulums, wave experiments' },
+  ],
+  Electronics: [
+    { emoji: '🔋', name: 'batteries (AA)', tip: 'Power source for circuits' },
+    { emoji: '🔦', name: 'flashlight', tip: 'Light source for optics experiments' },
+    { emoji: '🔌', name: 'wire', tip: 'Electrical conductor for circuits' },
+    { emoji: '💡', name: 'small bulb', tip: 'Complete simple circuits' },
+  ],
+  Outdoor: [
+    { emoji: '🌱', name: 'dirt/soil', tip: 'Erosion, seed germination, filtering' },
+    { emoji: '🪨', name: 'rocks', tip: 'Density, hardness, geology tests' },
+    { emoji: '🍂', name: 'leaves', tip: 'Photosynthesis, transpiration studies' },
+    { emoji: '🌿', name: 'grass', tip: 'Plant biology, decomposition' },
+    { emoji: '☀️', name: 'sunlight', tip: 'Solar energy, photosynthesis, evaporation' },
+  ]
+};
+
+// ─── STATE ───
+let currentExperiment = null;
+let currentGrade = '';
+let currentSupplies = '';
+
+// ─── CHIP RENDERING ───
+const categoryTabs = document.getElementById('categoryTabs');
+const chipGrid = document.getElementById('chipGrid');
+let activeCategory = 'Kitchen';
+
+function renderCategories() {
+  categoryTabs.innerHTML = '';
+  Object.keys(SUPPLIES).forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-tab' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', cat === activeCategory);
+    btn.addEventListener('click', () => {
+      activeCategory = cat;
+      renderCategories();
+      renderChips();
+    });
+    categoryTabs.appendChild(btn);
+  });
+}
+
+function getActiveSupplies() {
+  return document.getElementById('suppliesInput').value
+    .split('\n').map(s => s.trim().toLowerCase()).filter(Boolean);
+}
+
+function renderChips() {
+  chipGrid.innerHTML = '';
+  const active = getActiveSupplies();
+  (SUPPLIES[activeCategory] || []).forEach(item => {
+    const chip = document.createElement('button');
+    const isActive = active.includes(item.name.toLowerCase());
+    chip.className = 'chip' + (isActive ? ' active' : '');
+    chip.setAttribute('role', 'listitem');
+    chip.setAttribute('aria-label', item.name);
+    chip.innerHTML = `${item.emoji} ${item.name}<span class="chip-tooltip">${item.tip}</span>`;
+    chip.addEventListener('click', () => {
+      const textarea = document.getElementById('suppliesInput');
+      const lines = textarea.value.split('\n').map(s => s.trim()).filter(Boolean);
+      const idx = lines.findIndex(l => l.toLowerCase() === item.name.toLowerCase());
+      if (idx >= 0) lines.splice(idx, 1);
+      else lines.push(item.name);
+      textarea.value = lines.join('\n');
+      renderChips();
+      updateLegend();
+    });
+    chipGrid.appendChild(chip);
+  });
+}
+
+renderCategories();
+renderChips();
+
+document.getElementById('suppliesInput').addEventListener('input', () => {
+  renderChips();
+  updateLegend();
+});
+
+// ─── LEGEND ───
+function updateLegend() {
+  const supplies = getActiveSupplies();
+  const legend = document.getElementById('supplyLegend');
+  const items = document.getElementById('legendItems');
+  if (!supplies.length) { legend.style.display = 'none'; return; }
+  legend.style.display = 'block';
+  items.innerHTML = supplies.map(s => {
+    const found = Object.values(SUPPLIES).flat().find(c => c.name.toLowerCase() === s.toLowerCase());
+    const emoji = found ? found.emoji : '🧪';
+    return `<span class="legend-item">${emoji} ${s}</span>`;
+  }).join('');
+}
+
+// ─── API KEY MODAL ───
+const modalOverlay = document.getElementById('modalOverlay');
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  modalOverlay.classList.add('visible');
+  const key = sessionStorage.getItem('anthropic_key') || '';
+  document.getElementById('apiKeyInput').value = key;
+});
+document.getElementById('closeModalBtn').addEventListener('click', () => modalOverlay.classList.remove('visible'));
+document.getElementById('clearKeyBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('anthropic_key');
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('keyBadge').classList.remove('visible');
+  showToast('API key cleared');
+  modalOverlay.classList.remove('visible');
+});
+document.getElementById('saveKeyBtn').addEventListener('click', () => {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { showToast('Please enter an API key'); return; }
+  sessionStorage.setItem('anthropic_key', key);
+  document.getElementById('keyBadge').classList.add('visible');
+  showToast('✓ API key saved for this session');
+  modalOverlay.classList.remove('visible');
+});
+document.getElementById('toggleReveal').addEventListener('click', () => {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('visible'); });
+// Restore badge if key in session
+if (sessionStorage.getItem('anthropic_key')) document.getElementById('keyBadge').classList.add('visible');
+
+// ─── TOAST ───
+function showToast(msg, duration = 3000) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), duration);
+}
+
+// ─── RIPPLE ───
+document.getElementById('generateBtn').addEventListener('click', function(e) {
+  const btn = this;
+  const circle = document.createElement('span');
+  const d = Math.max(btn.offsetWidth, btn.offsetHeight);
+  const rect = btn.getBoundingClientRect();
+  circle.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX-rect.left-d/2}px;top:${e.clientY-rect.top-d/2}px`;
+  circle.className = 'ripple';
+  btn.appendChild(circle);
+  setTimeout(() => circle.remove(), 700);
+  generateExperiment();
+});
+
+// ─── SYSTEM PROMPT ───
+const SYSTEM_PROMPT = `You are an expert K-12 science educator who specializes in hands-on, inquiry-based experiments. You create safe, engaging, age-appropriate science experiments using only the materials provided.
+
+Your response must begin with exactly this JSON block (on its own line, do not wrap in markdown fences):
+{"complexity": <1-5>, "time": <1-5>, "mess": <1-5>, "title": "<experiment title>"}
+
+Then provide a complete experiment in markdown format with the following sections:
+## 🔬 [Experiment Title]
+**The Big Question:** (A curiosity-sparking question)
+**What You'll Learn:** (1-2 sentences on the scientific concept)
+**Materials:** (bulleted list — use only the provided supplies)
+**Safety Notes:** (brief, age-appropriate safety tips)
+**Procedure:** (numbered steps, clear and simple language appropriate for the grade level)
+**What to Observe:** (what students should look for)
+**The Science Behind It:** (simple explanation of why it works)
+**Extension Ideas:** (2-3 ideas to go further)`;
+
+// ─── GENERATE ───
+async function generateExperiment() {
+  const grade = document.getElementById('gradeSelect').value;
+  const supplies = document.getElementById('suppliesInput').value.trim();
+  const apiKey = sessionStorage.getItem('anthropic_key');
+
+  // Validations
+  if (!apiKey) {
+    showError('Please set your Anthropic API key first (⚙️ Settings button).');
+    return;
+  }
+  if (!grade) { showError('Please select a grade level.'); return; }
+  if (!supplies) { showError('Please enter at least one supply.'); return; }
+
+  clearError();
+  setLoading(true);
+  document.getElementById('resultSection').classList.remove('visible');
+  document.getElementById('subsSection').classList.remove('visible');
+
+  const userPrompt = `Grade level context: ${grade}\nAvailable supplies:\n${supplies}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    const rawText = data.content[0].text;
+
+    // Parse JSON block
+    const jsonMatch = rawText.match(/^\s*(\{[^\n]+\})/);
+    let ratings = { complexity: 3, time: 3, mess: 3, title: 'Science Experiment' };
+    let markdown = rawText;
+
+    if (jsonMatch) {
+      try {
+        ratings = { ...ratings, ...JSON.parse(jsonMatch[1]) };
+        markdown = rawText.slice(jsonMatch[0].length).trim();
+      } catch(e) {}
+    }
+
+    currentExperiment = { markdown, ratings, grade, supplies, timestamp: Date.now() };
+    currentGrade = grade;
+    currentSupplies = supplies;
+
+    renderResult(markdown, ratings);
+    setLoading(false);
+
+    // Run substitutions in parallel
+    fetchSubstitutions(supplies, apiKey);
+
+  } catch(e) {
+    setLoading(false);
+    showError('Experiment generation failed: ' + e.message);
+  }
+}
+
+function renderResult(markdown, ratings) {
+  // Difficulty badge
+  const badge = document.getElementById('difficultyBadge');
+  const rows = document.getElementById('badgeRows');
+  rows.innerHTML = `
+    <div class="badge-item">
+      <div class="badge-label">Complexity</div>
+      <div class="badge-stars">${stars(ratings.complexity, '⭐')}</div>
+    </div>
+    <div class="badge-item">
+      <div class="badge-label">Time Required</div>
+      <div class="badge-stars">${stars(ratings.time, '⏱')}</div>
+    </div>
+    <div class="badge-item">
+      <div class="badge-label">Mess Level</div>
+      <div class="badge-stars">${stars(ratings.mess, '🧹')}</div>
+    </div>
+  `;
+  badge.classList.add('visible');
+
+  // Experiment HTML
+  document.getElementById('experimentContent').innerHTML = marked.parse(markdown);
+  document.getElementById('resultSection').classList.add('visible');
+}
+
+function stars(n, emoji) {
+  n = Math.max(1, Math.min(5, n));
+  return emoji.repeat(n) + '<span style="opacity:0.2">' + emoji.repeat(5 - n) + '</span>';
+}
+
+// ─── SUBSTITUTIONS ───
+async function fetchSubstitutions(supplies, apiKey) {
+  const supplyList = supplies.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!supplyList.length) return;
+
+  const prompt = `For each of these supplies used in a science experiment, suggest 2-3 common household alternatives. Keep it brief.
+
+Supplies: ${supplyList.join(', ')}
+
+For each supply, respond in this exact format:
+**[Original Supply]** → [Alternative 1], [Alternative 2] — [brief reason why these work]
+
+Only list substitutions, no intro text.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) return;
+    const data = await res.json();
+    const text = data.content[0].text.trim();
+
+    const lines = text.split('\n').filter(l => l.trim());
+    const subsContent = document.getElementById('subsContent');
+    subsContent.innerHTML = lines.map(line => {
+      if (!line.trim()) return '';
+      return `<div class="sub-card">${marked.parseInline(line)}</div>`;
+    }).join('');
+
+    document.getElementById('subsSection').classList.add('visible');
+  } catch(e) {}
+}
+
+document.getElementById('subsToggle').addEventListener('click', function() {
+  this.classList.toggle('open');
+  const body = document.getElementById('subsBody');
+  body.classList.toggle('open');
+  this.setAttribute('aria-expanded', body.classList.contains('open'));
+});
+
+// ─── SAVE / LOAD ───
+const MAX_SAVED = 10;
+
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('saved_experiments') || '[]'); }
+  catch(e) { return []; }
+}
+
+function setSaved(arr) {
+  localStorage.setItem('saved_experiments', JSON.stringify(arr));
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  if (!currentExperiment) return;
+  let saved = getSaved();
+  if (saved.length >= MAX_SAVED) {
+    saved.shift();
+    showToast('Oldest experiment removed to make room');
+  }
+  saved.push({
+    id: currentExperiment.timestamp,
+    title: currentExperiment.ratings.title,
+    grade: currentExperiment.grade,
+    markdown: currentExperiment.markdown,
+    ratings: currentExperiment.ratings,
+    supplies: currentExperiment.supplies,
+    timestamp: currentExperiment.timestamp
+  });
+  setSaved(saved);
+  renderSavedList();
+  showToast('💾 Experiment saved!');
+});
+
+function renderSavedList() {
+  const saved = getSaved();
+  const list = document.getElementById('savedList');
+  if (!saved.length) {
+    list.innerHTML = '<div class="empty-saved">No saved experiments yet.<br>Generate and save one!</div>';
+    return;
+  }
+  list.innerHTML = saved.slice().reverse().map(exp => {
+    const date = new Date(exp.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `
+      <div class="saved-item" data-id="${exp.id}" role="button" tabindex="0" aria-label="Load: ${exp.title}">
+        <div class="saved-item-info">
+          <div class="saved-item-title">${escHtml(exp.title)}</div>
+          <div class="saved-item-meta">Grade ${escHtml(exp.grade)} · ${date}</div>
+        </div>
+        <button class="btn-delete" data-id="${exp.id}" aria-label="Delete ${escHtml(exp.title)}">🗑</button>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.saved-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('btn-delete')) return;
+      const id = parseInt(item.dataset.id);
+      loadSavedExperiment(id);
+    });
+    item.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') item.click();
+    });
+  });
+
+  list.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = parseInt(btn.dataset.id);
+      let saved = getSaved().filter(s => s.id !== id);
+      setSaved(saved);
+      renderSavedList();
+      showToast('Experiment deleted');
+    });
+  });
+}
+
+function loadSavedExperiment(id) {
+  const saved = getSaved().find(s => s.id === id);
+  if (!saved) return;
+  currentExperiment = saved;
+  currentGrade = saved.grade;
+  currentSupplies = saved.supplies;
+  renderResult(saved.markdown, saved.ratings);
+  document.getElementById('subsSection').classList.remove('visible');
+  document.getElementById('errorMsg').classList.remove('visible');
+  showToast('Loaded: ' + saved.title);
+}
+
+renderSavedList();
+
+// ─── PRINT WORKSHEET ───
+document.getElementById('printBtn').addEventListener('click', () => {
+  if (!currentExperiment) return;
+  const { ratings, supplies, grade } = currentExperiment;
+  const supplyList = supplies.split('\n').map(s => s.trim()).filter(Boolean);
+
+  const worksheetHTML = `
+    <div style="font-family:'Source Serif 4',Georgia,serif;max-width:700px;margin:0 auto;padding:20px;color:#1B2A3B;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <svg width="50" height="60" viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px;">
+          <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" fill="#2A7FBF" opacity="0.3"/>
+          <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" stroke="#2A7FBF" stroke-width="2" fill="none"/>
+          <rect x="22" y="2" width="16" height="22" rx="2" fill="#2A7FBF" opacity="0.3"/>
+          <line x1="22" y1="2" x2="22" y2="26" stroke="#2A7FBF" stroke-width="2"/>
+          <line x1="38" y1="2" x2="38" y2="26" stroke="#2A7FBF" stroke-width="2"/>
+          <line x1="20" y1="2" x2="40" y2="2" stroke="#2A7FBF" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <h1 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin:0;">${escHtml(ratings.title)}</h1>
+        <p style="color:#888;margin-top:4px;">Grade Level: ${escHtml(grade)} &nbsp;|&nbsp; Science Observation Worksheet</p>
+        <hr style="border:none;border-top:2px solid #2A7FBF;margin:12px 0;">
+      </div>
+      <section style="margin-bottom:20px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">📝 My Hypothesis</h2>
+        <p style="color:#888;font-size:0.85rem;margin-bottom:4px;">I think that…</p>
+        <div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>
+        <div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>
+        <div style="border-bottom:1.5px solid #ccc;height:28px;"></div>
+      </section>
+      <section style="margin-bottom:20px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🧪 Materials Checklist</h2>
+        ${supplyList.map(s => `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><input type="checkbox" style="width:16px;height:16px;"> <span>${escHtml(s)}</span></div>`).join('')}
+      </section>
+      <section style="margin-bottom:20px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🔢 Procedure Steps</h2>
+        ${[1,2,3,4,5,6].map(n => `<div style="margin-bottom:10px;"><strong style="color:#3ABFB0;">${n}.</strong> <div style="border-bottom:1px solid #ccc;height:22px;margin-top:4px;"></div></div>`).join('')}
+      </section>
+      <section style="margin-bottom:20px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🔭 Observations</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+          <tr style="background:#f0f8ff;">
+            <th style="border:1px solid #ccc;padding:8px;text-align:left;">What I did</th>
+            <th style="border:1px solid #ccc;padding:8px;text-align:left;">What I noticed</th>
+          </tr>
+          ${[1,2,3,4].map(() => `<tr><td style="border:1px solid #ccc;padding:8px;height:32px;"></td><td style="border:1px solid #ccc;padding:8px;height:32px;"></td></tr>`).join('')}
+        </table>
+      </section>
+      <section style="margin-bottom:20px;">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">💡 My Conclusion</h2>
+        <p style="color:#888;font-size:0.85rem;margin-bottom:4px;">What did I learn? Was my hypothesis correct?</p>
+        ${[1,2,3,4].map(() => `<div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>`).join('')}
+      </section>
+      <footer style="text-align:center;margin-top:24px;font-size:0.78rem;color:#aaa;border-top:1px solid #eee;padding-top:12px;">
+        Generated with Science Experiment Generator ⚗️
+      </footer>
+    </div>`;
+
+  const printWin = window.open('', '_blank');
+  printWin.document.write(`<!DOCTYPE html><html><head><title>Worksheet — ${escHtml(ratings.title)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+    <style>body{margin:0;background:#fff;}@media print{body{margin:0;}}</style>
+    </head><body>${worksheetHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
+  printWin.document.close();
+});
+
+// ─── UTILS ───
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setLoading(on) {
+  const wrap = document.getElementById('loadingWrap');
+  const btn = document.getElementById('generateBtn');
+  if (on) { wrap.classList.add('visible'); btn.disabled = true; btn.textContent = 'Generating…'; }
+  else { wrap.classList.remove('visible'); btn.disabled = false; btn.textContent = 'Generate Experiment ⚗️'; }
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+
+function clearError() {
+  document.getElementById('errorMsg').classList.remove('visible');
+}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('visible');
+  if (e.key === 'Enter' && e.ctrlKey) document.getElementById('generateBtn').click();
+});
+</script>
+</body>
+</html>
