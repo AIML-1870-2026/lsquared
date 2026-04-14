@@ -6,841 +6,703 @@
 <title>Science Experiment Generator ⚗️</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
-  :root {
-    --bg: #F7F4EF;
-    --text: #1B2A3B;
-    --blue: #2A7FBF;
-    --teal: #3ABFB0;
-    --orange: #E8834A;
-    --green: #4CAF7A;
-    --card: #FFFFFF;
-    --border: #D8D0C4;
-    --shadow: 0 2px 12px rgba(27,42,59,0.08);
-    --shadow-hover: 0 6px 20px rgba(27,42,59,0.14);
-  }
+:root{
+  --bg:#F0EDE8;
+  --surface:#FAFAF8;
+  --card:#FFFFFF;
+  --navy:#0F1E2E;
+  --navy2:#1B2E42;
+  --blue:#2563EB;
+  --blue-light:#3B82F6;
+  --teal:#0D9488;
+  --teal-light:#14B8A6;
+  --orange:#EA6C1A;
+  --green:#059669;
+  --red:#DC2626;
+  --text:#1A2433;
+  --text2:#4B5563;
+  --text3:#9CA3AF;
+  --border:#E2DDD8;
+  --border2:#D1CBC3;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
+  --shadow:0 4px 16px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg:0 12px 40px rgba(0,0,0,0.12),0 4px 12px rgba(0,0,0,0.06);
+  --radius:14px;
+  --radius-sm:8px;
+  --radius-xs:6px;
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important; }
-  }
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Source Serif 4', Georgia, serif;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+/* ── HEADER ── */
+.header{background:var(--navy);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.3)}
+.header-brand{display:flex;align-items:center;gap:10px}
+.header-brand svg{width:28px;height:28px}
+.header-title{font-family:'Playfair Display',serif;font-size:1.2rem;color:#fff;letter-spacing:-.01em}
+.header-title span{color:#5EEAD4}
+.header-right{display:flex;align-items:center;gap:10px}
+.key-pill{display:none;align-items:center;gap:5px;background:rgba(5,150,105,0.25);border:1px solid rgba(5,150,105,0.4);color:#6EE7B7;font-size:.72rem;font-family:'JetBrains Mono',monospace;padding:3px 10px;border-radius:20px;font-weight:500}
+.key-pill.on{display:flex}
+.key-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:#10B981;box-shadow:0 0 6px #10B981}
+.btn-settings{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.85);border-radius:var(--radius-sm);padding:6px 14px;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif}
+.btn-settings:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.22);color:#fff}
 
-  /* ─── HEADER ─── */
-  .site-header {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--text);
-    padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between;
-    height: 64px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  }
-  .site-header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem; font-weight: 700;
-    color: #fff;
-    letter-spacing: 0.01em;
-  }
-  .site-header h1 span { color: var(--teal); }
-  .header-actions { display: flex; align-items: center; gap: 12px; }
-  .key-badge {
-    display: none; align-items: center; gap: 6px;
-    background: var(--green); color: #fff;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.72rem; padding: 4px 10px; border-radius: 20px;
-  }
-  .key-badge.visible { display: flex; }
-  .btn-icon {
-    background: rgba(255,255,255,0.12); border: none; cursor: pointer;
-    color: #fff; border-radius: 8px; padding: 8px 12px;
-    font-size: 1.1rem; transition: background 0.2s;
-  }
-  .btn-icon:hover { background: rgba(255,255,255,0.22); }
+/* ── HERO ── */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1A3554 50%,#0F2A3F 100%);padding:52px 28px 48px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(94,234,212,0.12);border:1px solid rgba(94,234,212,0.25);color:#5EEAD4;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:18px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:#fff;line-height:1.15;margin-bottom:14px;letter-spacing:-.02em}
+.hero h1 em{font-style:normal;color:#5EEAD4}
+.hero p{color:rgba(255,255,255,0.6);font-size:.95rem;max-width:480px;margin:0 auto;line-height:1.65}
 
-  /* ─── MAIN LAYOUT ─── */
-  .app-wrap {
-    max-width: 900px; margin: 0 auto;
-    padding: 32px 20px;
-    display: flex; gap: 24px;
-  }
-  .main-col { flex: 1; min-width: 0; }
-  .sidebar {
-    width: 260px; flex-shrink: 0;
-    display: flex; flex-direction: column; gap: 0;
-  }
+/* ── LAYOUT ── */
+.app{max-width:960px;margin:0 auto;padding:32px 20px;display:grid;grid-template-columns:1fr 280px;gap:24px}
+@media(max-width:768px){.app{grid-template-columns:1fr;padding:20px 14px}}
 
-  /* ─── CARDS ─── */
-  .card {
-    background: var(--card); border-radius: 12px;
-    box-shadow: var(--shadow); border: 1px solid var(--border);
-    padding: 24px;
-    transition: box-shadow 0.2s, transform 0.2s;
-  }
-  .card:hover { box-shadow: var(--shadow-hover); }
-  .card-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem; font-weight: 600;
-    color: var(--text); margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
+/* ── CARD ── */
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);padding:24px;transition:box-shadow .2s}
 
-  /* ─── FORM ─── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label {
-    font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.06em; color: var(--blue);
-  }
-  .form-group select, .form-group textarea {
-    font-family: 'Source Serif 4', serif;
-    font-size: 0.95rem; color: var(--text);
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 8px; padding: 10px 14px;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-    width: 100%;
-  }
-  .form-group select:focus, .form-group textarea:focus {
-    border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(58,191,176,0.18);
-  }
-  .form-group textarea {
-    resize: vertical; min-height: 100px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.88rem; line-height: 1.6;
-  }
+/* ── SECTION LABEL ── */
+.sec-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 
-  /* ─── SUPPLY CHIPS ─── */
-  .chips-section { margin-bottom: 20px; }
-  .chips-section .section-label {
-    font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.06em; color: var(--blue); margin-bottom: 10px;
-  }
-  .category-tabs {
-    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
-  }
-  .cat-tab {
-    background: none; border: 1.5px solid var(--border);
-    border-radius: 20px; padding: 3px 12px;
-    font-family: 'Source Serif 4', serif;
-    font-size: 0.8rem; cursor: pointer; color: var(--text);
-    transition: all 0.15s;
-  }
-  .cat-tab.active, .cat-tab:hover {
-    background: var(--teal); border-color: var(--teal); color: #fff;
-  }
-  .chip-grid {
-    display: flex; flex-wrap: wrap; gap: 6px;
-  }
-  .chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: var(--bg); border: 1.5px solid var(--border);
-    border-radius: 20px; padding: 4px 12px;
-    font-size: 0.82rem; cursor: pointer; user-select: none;
-    transition: all 0.15s; position: relative;
-    color: var(--text);
-  }
-  .chip:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); }
-  .chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
-  .chip-tooltip {
-    position: absolute; bottom: calc(100% + 6px); left: 50%;
-    transform: translateX(-50%);
-    background: var(--text); color: #fff;
-    font-size: 0.72rem; padding: 5px 9px; border-radius: 6px;
-    white-space: nowrap; pointer-events: none;
-    opacity: 0; transition: opacity 0.15s;
-    z-index: 10;
-    font-family: 'Source Serif 4', serif;
-  }
-  .chip:hover .chip-tooltip { opacity: 1; }
+/* ── GRADE SELECT ── */
+.grade-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px}
+.grade-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 6px;text-align:center;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.grade-btn .grade-icon{font-size:1.4rem;display:block;margin-bottom:4px}
+.grade-btn .grade-name{font-size:.78rem;font-weight:600;color:var(--text2);display:block}
+.grade-btn.active{background:linear-gradient(135deg,#EFF6FF,#ECFDF5);border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.12)}
+.grade-btn.active .grade-name{color:var(--teal)}
+.grade-btn:hover:not(.active){border-color:var(--border2);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 
-  /* ─── GENERATE BUTTON ─── */
-  .btn-generate {
-    width: 100%;
-    background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
-    color: #fff; border: none; border-radius: 10px;
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem; font-weight: 600;
-    padding: 14px 24px; cursor: pointer;
-    position: relative; overflow: hidden;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 14px rgba(42,127,191,0.3);
-  }
-  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(42,127,191,0.4); }
-  .btn-generate:active { transform: translateY(0); }
-  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-  .ripple {
-    position: absolute; border-radius: 50%;
-    background: rgba(255,255,255,0.35);
-    transform: scale(0);
-    animation: ripple 0.6s linear;
-    pointer-events: none;
-  }
-  @keyframes ripple {
-    to { transform: scale(4); opacity: 0; }
-  }
+/* ── SUPPLY TAG INPUT ── */
+.supply-input-wrap{position:relative;margin-bottom:20px}
+.supply-search-box{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;min-height:52px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:text;transition:border-color .2s,box-shadow .2s}
+.supply-search-box:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,0.12)}
+.supply-tag{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:20px;padding:3px 10px 3px 12px;font-size:.78rem;font-weight:500;white-space:nowrap;animation:tagIn .15s ease}
+@keyframes tagIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.supply-tag .tag-emoji{font-size:.95em}
+.supply-tag button{background:none;border:none;color:rgba(255,255,255,0.6);cursor:pointer;font-size:.85rem;line-height:1;padding:0 1px;transition:color .1s}
+.supply-tag button:hover{color:#fff}
+.supply-search-input{flex:1;min-width:120px;background:none;border:none;outline:none;font-family:'Inter',sans-serif;font-size:.88rem;color:var(--text);padding:2px 0}
+.supply-search-input::placeholder{color:var(--text3)}
+.supply-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:50;overflow:hidden;display:none;max-height:240px;overflow-y:auto}
+.supply-dropdown.open{display:block;animation:dropIn .15s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.drop-category{padding:6px 12px 3px;font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-top:1px solid var(--border)}
+.drop-category:first-child{border-top:none}
+.drop-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;transition:background .1s;font-size:.85rem}
+.drop-item:hover,.drop-item.highlighted{background:#F0FDF4}
+.drop-item .drop-emoji{font-size:1.1rem;width:22px;text-align:center;flex-shrink:0}
+.drop-item .drop-name{flex:1;font-weight:500}
+.drop-item .drop-tip{font-size:.72rem;color:var(--text3);white-space:nowrap}
+.drop-item.selected{opacity:.45}
+.drop-item.selected::after{content:'✓';color:var(--teal);font-weight:700;margin-left:auto}
+.drop-empty{padding:20px;text-align:center;color:var(--text3);font-size:.85rem}
 
-  /* ─── LOADING BEAKER ─── */
-  .loading-wrap {
-    display: none; flex-direction: column; align-items: center;
-    padding: 36px; gap: 16px;
-  }
-  .loading-wrap.visible { display: flex; }
-  .loading-wrap p {
-    color: var(--blue); font-style: italic; font-size: 0.95rem;
-  }
-  .beaker-svg { width: 60px; height: 72px; }
-  .bubble {
-    animation: rise 1.5s ease-in infinite;
-    opacity: 0;
-  }
-  .bubble:nth-child(1) { animation-delay: 0s; }
-  .bubble:nth-child(2) { animation-delay: 0.5s; }
-  .bubble:nth-child(3) { animation-delay: 1s; }
-  @keyframes rise {
-    0%   { transform: translateY(0); opacity: 0.8; }
-    100% { transform: translateY(-30px); opacity: 0; }
-  }
+/* ── COMBOS ── */
+.combos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:6px}
+.combo-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.combo-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .15s;background:linear-gradient(135deg,rgba(13,148,136,0.06),rgba(37,99,235,0.06))}
+.combo-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:var(--shadow)}
+.combo-card:hover::before{opacity:1}
+.combo-icon{font-size:1.5rem;margin-bottom:6px;display:block}
+.combo-name{font-size:.8rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.combo-supplies{font-size:.7rem;color:var(--text3);line-height:1.4}
 
-  /* ─── DIFFICULTY BADGE ─── */
-  .difficulty-badge {
-    display: none;
-    background: linear-gradient(135deg, #e8f4fb 0%, #e8fbf9 100%);
-    border: 1.5px solid var(--teal);
-    border-radius: 12px; padding: 16px 20px;
-    margin-bottom: 20px;
-    animation: slideIn 0.4s ease;
-  }
-  .difficulty-badge.visible { display: block; }
-  .badge-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem; font-weight: 600;
-    color: var(--teal); margin-bottom: 12px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .badge-rows { display: flex; gap: 20px; flex-wrap: wrap; }
-  .badge-item { display: flex; flex-direction: column; gap: 4px; }
-  .badge-label {
-    font-size: 0.72rem; text-transform: uppercase;
-    letter-spacing: 0.07em; color: #888; font-weight: 600;
-  }
-  .badge-stars { font-size: 1.1rem; letter-spacing: 2px; }
+/* ── GENERATE BTN ── */
+.btn-generate{width:100%;padding:16px;background:linear-gradient(135deg,var(--blue) 0%,var(--teal) 100%);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(37,99,235,.3);position:relative;overflow:hidden;letter-spacing:.01em;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(37,99,235,.4)}
+.btn-generate:active{transform:translateY(0)}
+.btn-generate:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-generate .btn-arrow{transition:transform .2s}
+.btn-generate:hover .btn-arrow{transform:translateX(3px)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.3);transform:scale(0);animation:ripple .55s linear;pointer-events:none}
+@keyframes ripple{to{transform:scale(4);opacity:0}}
 
-  /* ─── RESULT ─── */
-  .result-section {
-    display: none;
-    animation: slideIn 0.5s ease;
-  }
-  .result-section.visible { display: block; }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .result-actions {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .btn-action {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--card); border: 1.5px solid var(--border);
-    border-radius: 8px; padding: 8px 14px;
-    font-family: 'Source Serif 4', serif;
-    font-size: 0.88rem; cursor: pointer; color: var(--text);
-    transition: all 0.15s;
-  }
-  .btn-action:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); }
-  .experiment-content {
-    font-family: 'Source Serif 4', serif;
-    line-height: 1.75;
-  }
-  .experiment-content h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem; color: var(--blue);
-    margin: 0 0 16px; padding-bottom: 10px;
-    border-bottom: 2px solid var(--teal);
-  }
-  .experiment-content h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem; color: var(--text);
-    margin: 20px 0 8px;
-  }
-  .experiment-content p { margin-bottom: 12px; }
-  .experiment-content ul, .experiment-content ol {
-    padding-left: 22px; margin-bottom: 12px;
-  }
-  .experiment-content li { margin-bottom: 6px; }
-  .experiment-content strong { color: var(--blue); }
-  .experiment-content code {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85em;
-    background: var(--bg); padding: 1px 5px;
-    border-radius: 4px; border: 1px solid var(--border);
-  }
+/* ── LOADING ── */
+.loading{display:none;flex-direction:column;align-items:center;padding:48px 24px;gap:20px;text-align:center}
+.loading.on{display:flex}
+.flask-wrap{position:relative;width:70px;height:84px}
+.flask-wrap svg{width:70px;height:84px}
+.bubble{animation:rise 2s ease-in-out infinite;opacity:0}
+.bubble:nth-child(1){animation-delay:0s}
+.bubble:nth-child(2){animation-delay:.65s}
+.bubble:nth-child(3){animation-delay:1.3s}
+@keyframes rise{0%{transform:translateY(0);opacity:.9}100%{transform:translateY(-32px);opacity:0}}
+.loading-text{font-weight:600;color:var(--blue);font-size:.95rem}
+.loading-sub{font-size:.8rem;color:var(--text3);margin-top:-14px}
+.loading-dots::after{content:'...';animation:dots 1.5s steps(4,end) infinite}
+@keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
 
-  /* ─── SUBSTITUTIONS ─── */
-  .substitutions-section {
-    display: none; margin-top: 20px;
-    animation: slideIn 0.4s ease;
-  }
-  .substitutions-section.visible { display: block; }
-  .collapsible-toggle {
-    width: 100%; background: none; border: 1.5px solid var(--border);
-    border-radius: 8px; padding: 10px 16px;
-    display: flex; align-items: center; justify-content: space-between;
-    cursor: pointer; font-family: 'Source Serif 4', serif;
-    font-size: 0.92rem; color: var(--text);
-    transition: all 0.15s;
-  }
-  .collapsible-toggle:hover { border-color: var(--orange); color: var(--orange); }
-  .collapsible-toggle .arrow { transition: transform 0.2s; }
-  .collapsible-toggle.open .arrow { transform: rotate(180deg); }
-  .collapsible-body { display: none; padding-top: 12px; }
-  .collapsible-body.open { display: block; animation: slideIn 0.3s ease; }
-  .sub-card {
-    background: var(--bg); border: 1px solid var(--border);
-    border-radius: 8px; padding: 12px 16px; margin-bottom: 8px;
-    font-size: 0.9rem;
-  }
-  .sub-card strong { color: var(--orange); }
+/* ── ERROR ── */
+.error-box{display:none;background:#FFF5F5;border:1.5px solid #FCA5A5;border-radius:var(--radius-sm);padding:14px 18px;color:var(--red);font-size:.875rem;margin-top:16px;line-height:1.5;gap:10px;align-items:flex-start}
+.error-box.on{display:flex}
+.error-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
 
-  /* ─── SIDEBAR ─── */
-  .sidebar-header {
-    font-family: 'Playfair Display', serif;
-    font-size: 1rem; font-weight: 600;
-    color: var(--text); padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-    background: var(--card);
-    border-radius: 12px 12px 0 0;
-    border: 1px solid var(--border);
-    border-bottom: none;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .saved-list {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    overflow: hidden;
-    max-height: 520px; overflow-y: auto;
-  }
-  .saved-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer; transition: background 0.15s;
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
-  }
-  .saved-item:last-child { border-bottom: none; }
-  .saved-item:hover { background: #f0f8ff; }
-  .saved-item-info { flex: 1; min-width: 0; }
-  .saved-item-title {
-    font-size: 0.88rem; font-weight: 600; color: var(--blue);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .saved-item-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
-  .btn-delete {
-    background: none; border: none; cursor: pointer;
-    color: #ccc; font-size: 0.9rem; padding: 2px 4px;
-    border-radius: 4px; flex-shrink: 0;
-    transition: color 0.15s;
-  }
-  .btn-delete:hover { color: #e55; }
-  .empty-saved {
-    padding: 24px 16px; text-align: center;
-    color: #aaa; font-size: 0.85rem; font-style: italic;
-  }
-  .supply-legend {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px;
-    margin-top: 16px;
-  }
-  .supply-legend h4 {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.9rem; font-weight: 600;
-    color: var(--text); margin-bottom: 10px;
-  }
-  .legend-items { display: flex; flex-wrap: wrap; gap: 6px; }
-  .legend-item {
-    font-size: 0.82rem; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 16px;
-    padding: 3px 10px;
-  }
+/* ── DIFFICULTY BADGE ── */
+.diff-badge{display:none;background:linear-gradient(135deg,#F0FDF4,#EFF6FF);border:1.5px solid #A7F3D0;border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;animation:slideUp .4s ease}
+.diff-badge.on{display:block}
+.diff-badge-title{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:12px}
+.diff-rows{display:flex;gap:24px;flex-wrap:wrap}
+.diff-item{}
+.diff-label{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:4px}
+.diff-val{font-size:1.05rem;letter-spacing:2px}
 
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(27,42,59,0.55); z-index: 200;
-    align-items: center; justify-content: center;
-    backdrop-filter: blur(2px);
-  }
-  .modal-overlay.visible { display: flex; }
-  .modal {
-    background: var(--card); border-radius: 14px;
-    padding: 28px; max-width: 420px; width: 90%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    animation: slideIn 0.3s ease;
-  }
-  .modal h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem; color: var(--text);
-    margin-bottom: 6px;
-  }
-  .modal p { font-size: 0.88rem; color: #666; margin-bottom: 18px; line-height: 1.5; }
-  .modal a { color: var(--blue); }
-  .input-reveal { position: relative; }
-  .input-reveal input {
-    width: 100%; padding: 10px 40px 10px 12px;
-    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
-    border: 1.5px solid var(--border); border-radius: 8px;
-    background: var(--bg); color: var(--text); outline: none;
-    transition: border-color 0.2s;
-  }
-  .input-reveal input:focus { border-color: var(--teal); }
-  .toggle-reveal {
-    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: #888; font-size: 1rem;
-  }
-  .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
-  .btn-primary {
-    background: var(--blue); color: #fff; border: none;
-    border-radius: 8px; padding: 9px 20px;
-    font-family: 'Source Serif 4', serif; font-size: 0.92rem;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .btn-primary:hover { background: #1e6aa8; }
-  .btn-secondary {
-    background: none; color: var(--text); border: 1.5px solid var(--border);
-    border-radius: 8px; padding: 9px 20px;
-    font-family: 'Source Serif 4', serif; font-size: 0.92rem;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .btn-secondary:hover { border-color: var(--text); }
+/* ── RESULT ── */
+.result-section{display:none;animation:slideUp .45s ease}
+.result-section.on{display:block}
+@keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.result-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.btn-action{display:inline-flex;align-items:center;gap:6px;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:8px 14px;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s}
+.btn-action:hover{border-color:var(--teal);color:var(--teal);background:#F0FDFA;transform:translateY(-1px)}
+.exp-content h2{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--navy);margin:0 0 18px;padding-bottom:12px;border-bottom:2px solid var(--teal);line-height:1.25}
+.exp-content h3{font-size:.88rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal);margin:22px 0 8px}
+.exp-content p{margin-bottom:12px;color:var(--text2);line-height:1.72;font-size:.93rem}
+.exp-content ul,.exp-content ol{padding-left:22px;margin-bottom:14px}
+.exp-content li{margin-bottom:5px;color:var(--text2);font-size:.93rem;line-height:1.6}
+.exp-content strong{color:var(--text);font-weight:600}
+.exp-content code{font-family:'JetBrains Mono',monospace;font-size:.82em;background:var(--bg);padding:1px 6px;border-radius:4px;border:1px solid var(--border)}
+.exp-content blockquote{border-left:3px solid var(--teal);padding:8px 16px;background:#F0FDFA;border-radius:0 var(--radius-xs) var(--radius-xs) 0;margin-bottom:12px}
 
-  /* ─── TOAST ─── */
-  .toast-container {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    z-index: 300; display: flex; flex-direction: column; gap: 8px; align-items: center;
-  }
-  .toast {
-    background: var(--text); color: #fff;
-    padding: 10px 20px; border-radius: 8px;
-    font-size: 0.88rem; font-family: 'Source Serif 4', serif;
-    box-shadow: var(--shadow-hover);
-    animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
-  }
-  @keyframes toastIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes toastOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
-  }
+/* ── SUBSTITUTIONS ── */
+.subs-section{display:none;margin-top:16px;animation:slideUp .35s ease}
+.subs-section.on{display:block}
+.coll-btn{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'Inter',sans-serif;font-size:.83rem;font-weight:600;color:var(--text2);transition:all .15s}
+.coll-btn:hover{border-color:var(--orange);color:var(--orange);background:#FFF7F0}
+.coll-arrow{transition:transform .2s;font-size:.75rem}
+.coll-btn.open .coll-arrow{transform:rotate(180deg)}
+.coll-body{display:none;padding-top:10px}
+.coll-body.open{display:block;animation:slideUp .25s ease}
+.sub-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-xs);padding:10px 14px;margin-bottom:7px;font-size:.85rem;color:var(--text2);line-height:1.5}
+.sub-card strong{color:var(--orange)}
 
-  /* ─── ERROR ─── */
-  .error-msg {
-    display: none; background: #fff0e8; border: 1.5px solid var(--orange);
-    border-radius: 10px; padding: 14px 18px; margin-top: 16px;
-    color: var(--orange); font-size: 0.92rem;
-  }
-  .error-msg.visible { display: block; animation: slideIn 0.3s ease; }
+/* ── SIDEBAR ── */
+.sidebar{display:flex;flex-direction:column;gap:16px}
+.saved-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.saved-header h3{font-size:.88rem;font-weight:700;color:var(--text)}
+.saved-count{background:var(--navy);color:#fff;font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:12px}
+.saved-list{max-height:420px;overflow-y:auto;margin:-4px -4px 0}
+.saved-item{display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:var(--radius-xs);cursor:pointer;transition:background .12s;border:1.5px solid transparent}
+.saved-item:hover{background:#F0F9FF;border-color:#BFDBFE}
+.saved-thumb{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--navy),#1A3554);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.saved-info{flex:1;min-width:0}
+.saved-title{font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved-meta{font-size:.7rem;color:var(--text3);margin-top:1px}
+.btn-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:.85rem;padding:2px 4px;border-radius:4px;transition:color .1s;flex-shrink:0;margin-top:6px}
+.btn-del:hover{color:var(--red)}
+.empty-saved{padding:24px 0;text-align:center;color:var(--text3);font-size:.82rem}
+.empty-saved .empty-icon{font-size:2rem;margin-bottom:8px;opacity:.4}
 
-  /* ─── PRINT WORKSHEET ─── */
-  @media print {
-    body > *:not(#print-worksheet) { display: none !important; }
-    #print-worksheet { display: block !important; }
-  }
-  #print-worksheet {
-    display: none;
-    font-family: 'Source Serif 4', Georgia, serif;
-  }
+.legend-card{background:linear-gradient(135deg,#F0FDF4,#EFF6FF);border:1px solid #D1FAE5;border-radius:var(--radius);padding:16px}
+.legend-card h4{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:10px}
+.legend-tags{display:flex;flex-wrap:wrap;gap:5px}
+.legend-tag{font-size:.75rem;background:#fff;border:1px solid #D1FAE5;border-radius:12px;padding:3px 9px;color:var(--text2)}
 
-  /* ─── FADE IN ON LOAD ─── */
-  .fade-in {
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
-  }
-  .fade-in:nth-child(1) { animation-delay: 0.1s; }
-  .fade-in:nth-child(2) { animation-delay: 0.25s; }
-  .fade-in:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes fadeIn {
-    to { opacity: 1; }
-  }
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,30,46,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
+.overlay.on{display:flex}
+.modal{background:var(--card);border-radius:16px;padding:28px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);animation:slideUp .3s ease}
+.modal h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:6px}
+.modal-desc{font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:20px}
+.modal-desc a{color:var(--blue);text-decoration:none}
+.modal-desc a:hover{text-decoration:underline}
+.input-group{position:relative;margin-bottom:6px}
+.input-group input{width:100%;padding:11px 40px 11px 14px;font-family:'JetBrains Mono',monospace;font-size:.82rem;border:1.5px solid var(--border);border-radius:var(--radius-xs);background:var(--bg);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+.input-group input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.btn-eye{position:absolute;right:11px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;transition:color .1s}
+.btn-eye:hover{color:var(--text)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-ghost{background:none;border:1.5px solid var(--border);border-radius:var(--radius-xs);padding:8px 16px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text2);transition:all .15s}
+.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-primary{background:var(--blue);color:#fff;border:none;border-radius:var(--radius-xs);padding:8px 20px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1D4ED8}
 
-  /* ─── RESPONSIVE ─── */
-  @media (max-width: 768px) {
-    .app-wrap { flex-direction: column; }
-    .sidebar { width: 100%; }
-    .form-grid { grid-template-columns: 1fr; }
-    .saved-list { max-height: 280px; }
-  }
-  @media (max-width: 480px) {
-    .site-header h1 { font-size: 1.1rem; }
-    .chip-grid { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
-    .app-wrap { padding: 16px 12px; }
-    .card { padding: 16px; }
-  }
+/* ── TOAST ── */
+.toasts{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{background:var(--navy);color:#fff;padding:10px 16px;border-radius:var(--radius-xs);font-size:.82rem;font-weight:500;box-shadow:var(--shadow-lg);animation:toastIn .25s ease,toastOut .3s ease 2.7s forwards;max-width:260px}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(16px)}}
+
+@media(max-width:480px){
+  .hero{padding:36px 20px 32px}
+  .grade-row{grid-template-columns:repeat(2,1fr)}
+  .combos-grid{grid-template-columns:repeat(2,1fr)}
+  .card{padding:16px}
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
-<header class="site-header">
-  <h1>⚗️ <span>Science</span> Experiment Generator</h1>
-  <div class="header-actions">
-    <span class="key-badge" id="keyBadge" aria-live="polite">✓ Key set</span>
-    <button class="btn-icon" id="settingsBtn" aria-label="API Key Settings" title="API Key Settings">⚙️</button>
+<header class="header">
+  <div class="header-brand">
+    <svg viewBox="0 0 28 28" fill="none"><path d="M10 3h8v10l6 10H4L10 13V3z" fill="none" stroke="#5EEAD4" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="18" r="1.5" fill="#5EEAD4" opacity=".8"><animate attributeName="cy" values="18;14;18" dur="2s" repeatCount="indefinite"/></circle><circle cx="16" cy="20" r="1" fill="#38BDF8" opacity=".6"><animate attributeName="cy" values="20;15;20" dur="2.5s" repeatCount="indefinite"/></circle></svg>
+    <span class="header-title">⚗️ <span>Science</span> Lab</span>
+  </div>
+  <div class="header-right">
+    <div class="key-pill" id="keyPill">API key active</div>
+    <button class="btn-settings" id="settingsBtn" aria-label="API Key Settings">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </button>
   </div>
 </header>
 
-<!-- MAIN -->
-<main class="app-wrap">
-  <div class="main-col">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🔬 AI-Powered · K–12 Ready</div>
+  <h1>Turn everyday supplies into<br><em>brilliant experiments</em></h1>
+  <p>Select your grade level, choose your supplies, and let AI design a complete, safe, hands-on science experiment in seconds.</p>
+</section>
+
+<!-- APP -->
+<div class="app">
+  <div>
 
     <!-- FORM CARD -->
-    <div class="card fade-in" style="margin-bottom:20px;">
-      <h2 class="card-title">🔬 Configure Your Experiment</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="gradeSelect">Grade Level</label>
-          <select id="gradeSelect" aria-label="Select grade level">
-            <option value="">— select —</option>
-            <option value="K–2">K–2 (Kindergarten–2nd Grade)</option>
-            <option value="3–5">3–5 (3rd–5th Grade)</option>
-            <option value="6–8">6–8 (Middle School)</option>
-            <option value="9–12">9–12 (High School)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="suppliesInput">Available Supplies <span style="color:#aaa;font-weight:400;text-transform:none">(one per line)</span></label>
-          <textarea id="suppliesInput" rows="4" placeholder="water&#10;baking soda&#10;vinegar&#10;balloons" aria-label="Enter supplies, one per line"></textarea>
-        </div>
+    <div class="card" style="margin-bottom:20px">
+
+      <!-- GRADE -->
+      <div class="sec-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/></svg>
+        Grade Level
+      </div>
+      <div class="grade-row" id="gradeRow">
+        <button class="grade-btn" data-grade="K–2"><span class="grade-icon">🐣</span><span class="grade-name">K – 2</span></button>
+        <button class="grade-btn" data-grade="3–5"><span class="grade-icon">🌱</span><span class="grade-name">3 – 5</span></button>
+        <button class="grade-btn" data-grade="6–8"><span class="grade-icon">🔭</span><span class="grade-name">6 – 8</span></button>
+        <button class="grade-btn" data-grade="9–12"><span class="grade-icon">⚛️</span><span class="grade-name">9 – 12</span></button>
       </div>
 
-      <!-- SUPPLY CHIPS -->
-      <div class="chips-section">
-        <div class="section-label">⚡ Quick-Add Supplies</div>
-        <div class="category-tabs" id="categoryTabs" role="tablist"></div>
-        <div class="chip-grid" id="chipGrid" role="list"></div>
+      <!-- SUPPLIES -->
+      <div class="sec-label" style="margin-bottom:8px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+        Supplies
+      </div>
+      <div class="supply-input-wrap" id="supplyWrap">
+        <div class="supply-search-box" id="supplyBox" onclick="document.getElementById('supplySearchInput').focus()">
+          <input type="text" id="supplySearchInput" class="supply-search-input" placeholder="Search or type a supply…" autocomplete="off" aria-label="Search supplies" aria-haspopup="listbox">
+        </div>
+        <div class="supply-dropdown" id="supplyDropdown" role="listbox"></div>
       </div>
 
+      <!-- COMBOS -->
+      <div class="sec-label" style="margin-bottom:10px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Quick Combos
+      </div>
+      <div class="combos-grid" id="combosGrid"></div>
+
+      <div style="height:20px"></div>
+
+      <!-- GENERATE -->
       <button class="btn-generate" id="generateBtn" aria-label="Generate science experiment">
-        Generate Experiment ⚗️
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/><circle cx="17" cy="17" r="4"/><path d="M19.5 19.5l2 2"/></svg>
+        Generate Experiment
+        <span class="btn-arrow">→</span>
       </button>
     </div>
 
     <!-- LOADING -->
-    <div class="loading-wrap" id="loadingWrap" aria-live="polite" aria-label="Generating experiment">
-      <svg class="beaker-svg" viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="22" y="2" width="16" height="22" rx="2" fill="#2A7FBF" opacity="0.3"/>
-        <rect x="23" y="3" width="14" height="20" rx="1" fill="#2A7FBF" opacity="0.15"/>
-        <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" fill="#2A7FBF" opacity="0.2"/>
-        <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" stroke="#2A7FBF" stroke-width="2" fill="none"/>
-        <path d="M14 52 Q30 46 46 52" stroke="#3ABFB0" stroke-width="2" fill="none" opacity="0.6"/>
-        <line x1="22" y1="2" x2="22" y2="26" stroke="#2A7FBF" stroke-width="2"/>
-        <line x1="38" y1="2" x2="38" y2="26" stroke="#2A7FBF" stroke-width="2"/>
-        <line x1="20" y1="2" x2="40" y2="2" stroke="#2A7FBF" stroke-width="2" stroke-linecap="round"/>
-        <circle class="bubble" cx="24" cy="50" r="3" fill="#3ABFB0" opacity="0.7"/>
-        <circle class="bubble" cx="30" cy="44" r="2.5" fill="#3ABFB0" opacity="0.7"/>
-        <circle class="bubble" cx="36" cy="48" r="2" fill="#3ABFB0" opacity="0.7"/>
-      </svg>
-      <p>Designing your experiment with AI…</p>
+    <div class="loading" id="loadingWrap" aria-live="polite">
+      <div class="flask-wrap">
+        <svg viewBox="0 0 70 84" fill="none">
+          <rect x="27" y="2" width="16" height="24" rx="2.5" fill="#2563EB" opacity=".25"/>
+          <path d="M27 26 L10 66 Q7.5 74 15 76 L55 76 Q62.5 74 60 66 L43 26 Z" fill="#2563EB" opacity=".15"/>
+          <path d="M27 26 L10 66 Q7.5 74 15 76 L55 76 Q62.5 74 60 66 L43 26 Z" stroke="#2563EB" stroke-width="2.2" fill="none"/>
+          <path d="M16 58 Q35 50 54 58" stroke="#0D9488" stroke-width="2" fill="none" opacity=".7"/>
+          <line x1="27" y1="2" x2="27" y2="28" stroke="#2563EB" stroke-width="2.2"/>
+          <line x1="43" y1="2" x2="43" y2="28" stroke="#2563EB" stroke-width="2.2"/>
+          <line x1="24" y1="2" x2="46" y2="2" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round"/>
+          <circle class="bubble" cx="27" cy="56" r="3.5" fill="#0D9488" opacity=".75"/>
+          <circle class="bubble" cx="35" cy="50" r="3" fill="#14B8A6" opacity=".7"/>
+          <circle class="bubble" cx="43" cy="54" r="2.5" fill="#0D9488" opacity=".65"/>
+        </svg>
+      </div>
+      <div>
+        <div class="loading-text">Designing your experiment<span class="loading-dots"></span></div>
+        <div class="loading-sub">AI is crafting a safe, hands-on activity for you</div>
+      </div>
     </div>
 
     <!-- ERROR -->
-    <div class="error-msg" id="errorMsg" role="alert"></div>
+    <div class="error-box" id="errorBox">
+      <span class="error-icon">⚠️</span>
+      <span id="errorText"></span>
+    </div>
 
-    <!-- RESULT SECTION -->
+    <!-- RESULT -->
     <div class="result-section" id="resultSection">
-      <!-- DIFFICULTY BADGE -->
-      <div class="difficulty-badge" id="difficultyBadge">
-        <div class="badge-title">📊 Difficulty Profile</div>
-        <div class="badge-rows" id="badgeRows"></div>
+      <div class="diff-badge" id="diffBadge">
+        <div class="diff-badge-title">📊 Difficulty Profile</div>
+        <div class="diff-rows" id="diffRows"></div>
       </div>
-
-      <!-- RESULT CARD -->
-      <div class="card" id="resultCard">
+      <div class="card">
         <div class="result-actions">
-          <button class="btn-action" id="saveBtn" aria-label="Save this experiment">💾 Save Experiment</button>
-          <button class="btn-action" id="printBtn" aria-label="Print observation worksheet">🖨 Print Worksheet</button>
+          <button class="btn-action" id="saveBtn">💾 Save Experiment</button>
+          <button class="btn-action" id="printBtn">🖨 Print Worksheet</button>
         </div>
-        <div class="experiment-content" id="experimentContent" aria-live="polite"></div>
+        <div class="exp-content" id="expContent" aria-live="polite"></div>
       </div>
-
-      <!-- SUBSTITUTIONS -->
-      <div class="substitutions-section" id="subsSection">
-        <button class="collapsible-toggle" id="subsToggle" aria-expanded="false" aria-controls="subsBody">
-          <span>🔄 Can't find a supply? Try these substitutions</span>
-          <span class="arrow">▼</span>
+      <div class="subs-section" id="subsSection">
+        <button class="coll-btn" id="subsToggle" aria-expanded="false">
+          <span>🔄 Can't find a supply? Try substitutions</span>
+          <span class="coll-arrow">▼</span>
         </button>
-        <div class="collapsible-body" id="subsBody">
+        <div class="coll-body" id="subsBody">
           <div id="subsContent"></div>
         </div>
       </div>
     </div>
 
-  </div><!-- /main-col -->
+  </div><!-- /main -->
 
   <!-- SIDEBAR -->
-  <aside class="sidebar" aria-label="Saved experiments">
-    <div class="sidebar-header">📚 Saved Experiments</div>
-    <div class="saved-list" id="savedList"></div>
-
-    <!-- SUPPLY LEGEND -->
-    <div class="supply-legend" id="supplyLegend" style="display:none;">
-      <h4>🧪 Current Supplies</h4>
-      <div class="legend-items" id="legendItems"></div>
+  <aside class="sidebar">
+    <div class="card">
+      <div class="saved-header">
+        <h3>📚 Saved Experiments</h3>
+        <span class="saved-count" id="savedCount">0</span>
+      </div>
+      <div class="saved-list" id="savedList">
+        <div class="empty-saved">
+          <div class="empty-icon">🧪</div>
+          No saved experiments yet.<br>Generate one to get started!
+        </div>
+      </div>
+    </div>
+    <div class="legend-card" id="legendCard" style="display:none">
+      <h4>Current Supplies</h4>
+      <div class="legend-tags" id="legendTags"></div>
     </div>
   </aside>
-</main>
+</div>
 
-<!-- API KEY MODAL -->
-<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<!-- MODAL -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
     <h2 id="modalTitle">⚙️ API Key Settings</h2>
-    <p>
-      Enter your Anthropic API key to use the experiment generator.
-      Your key is stored only in memory for this session — never saved to disk.<br><br>
-      Don't have a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get one at console.anthropic.com →</a>
+    <p class="modal-desc">
+      Paste your Anthropic API key below. It's stored in memory only for this session — never saved to disk or sent anywhere except Anthropic.<br><br>
+      Need a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get one free at console.anthropic.com →</a>
     </p>
-    <div class="input-reveal">
-      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." aria-label="Anthropic API key">
-      <button class="toggle-reveal" id="toggleReveal" aria-label="Toggle API key visibility">👁</button>
+    <div class="input-group">
+      <input type="password" id="keyInput" placeholder="sk-ant-api03-…" aria-label="Anthropic API key">
+      <button class="btn-eye" id="eyeBtn" aria-label="Toggle key visibility">👁</button>
     </div>
-    <div class="modal-actions">
-      <button class="btn-secondary" id="clearKeyBtn">Clear Key</button>
-      <button class="btn-secondary" id="closeModalBtn">Cancel</button>
+    <div class="modal-footer">
+      <button class="btn-ghost" id="clearBtn">Clear</button>
+      <button class="btn-ghost" id="cancelBtn">Cancel</button>
       <button class="btn-primary" id="saveKeyBtn">Save Key</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
-<div class="toast-container" id="toastContainer" aria-live="polite"></div>
-
-<!-- PRINT WORKSHEET (hidden, shown only on print) -->
-<div id="print-worksheet"></div>
+<!-- TOASTS -->
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
-// ─── SUPPLY CHIP DATA ───
-const SUPPLIES = {
-  Kitchen: [
-    { emoji: '💧', name: 'water', tip: 'Universal solvent, used in most experiments' },
-    { emoji: '🍶', name: 'vinegar', tip: 'Weak acid, great for acid-base reactions' },
-    { emoji: '🧂', name: 'baking soda', tip: 'Base (sodium bicarbonate) for reactions' },
-    { emoji: '🧂', name: 'salt', tip: 'Electrolyte, affects freezing and conductivity' },
-    { emoji: '🍬', name: 'sugar', tip: 'Carbohydrate, great for density experiments' },
-    { emoji: '🍋', name: 'lemon juice', tip: 'Citric acid, natural indicator' },
-    { emoji: '🎨', name: 'food coloring', tip: 'Visualize diffusion and mixing' },
-    { emoji: '🧴', name: 'dish soap', tip: 'Surfactant, lowers water surface tension' },
-    { emoji: '🌽', name: 'cornstarch', tip: 'Non-Newtonian fluid when mixed with water' },
-  ],
-  'Craft/Office': [
-    { emoji: '📄', name: 'paper', tip: 'For chromatography, absorption tests' },
-    { emoji: '🖊', name: 'tape', tip: 'Adhesion and static electricity experiments' },
-    { emoji: '✂️', name: 'scissors', tip: 'Cutting tool for model-making' },
-    { emoji: '🔵', name: 'rubber bands', tip: 'Study elasticity and potential energy' },
-    { emoji: '🎈', name: 'balloons', tip: 'Air pressure, static electricity, lungs model' },
-    { emoji: '🖊', name: 'markers', tip: 'Ink for chromatography' },
-    { emoji: '📦', name: 'cardboard', tip: 'Structural material, model building' },
-    { emoji: '🧵', name: 'string', tip: 'Pendulums, wave experiments' },
-  ],
-  Electronics: [
-    { emoji: '🔋', name: 'batteries (AA)', tip: 'Power source for circuits' },
-    { emoji: '🔦', name: 'flashlight', tip: 'Light source for optics experiments' },
-    { emoji: '🔌', name: 'wire', tip: 'Electrical conductor for circuits' },
-    { emoji: '💡', name: 'small bulb', tip: 'Complete simple circuits' },
-  ],
-  Outdoor: [
-    { emoji: '🌱', name: 'dirt/soil', tip: 'Erosion, seed germination, filtering' },
-    { emoji: '🪨', name: 'rocks', tip: 'Density, hardness, geology tests' },
-    { emoji: '🍂', name: 'leaves', tip: 'Photosynthesis, transpiration studies' },
-    { emoji: '🌿', name: 'grass', tip: 'Plant biology, decomposition' },
-    { emoji: '☀️', name: 'sunlight', tip: 'Solar energy, photosynthesis, evaporation' },
-  ]
-};
+// ─────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────
+const ALL_SUPPLIES = [
+  // Kitchen
+  {cat:'Kitchen',emoji:'💧',name:'water',tip:'Universal solvent — used in nearly every experiment'},
+  {cat:'Kitchen',emoji:'🫙',name:'vinegar',tip:'Weak acid — perfect for acid-base reactions'},
+  {cat:'Kitchen',emoji:'🧂',name:'baking soda',tip:'Base (sodium bicarbonate) — reacts with acids'},
+  {cat:'Kitchen',emoji:'🧂',name:'salt',tip:'Electrolyte — affects conductivity & freezing point'},
+  {cat:'Kitchen',emoji:'🍬',name:'sugar',tip:'Great for density layers and crystal growing'},
+  {cat:'Kitchen',emoji:'🍋',name:'lemon juice',tip:'Natural citric acid — pH indicator experiments'},
+  {cat:'Kitchen',emoji:'🎨',name:'food coloring',tip:'Visualize diffusion, density layers & mixing'},
+  {cat:'Kitchen',emoji:'🫧',name:'dish soap',tip:'Surfactant — lowers water surface tension'},
+  {cat:'Kitchen',emoji:'🌽',name:'cornstarch',tip:'Makes Oobleck — a non-Newtonian fluid'},
+  {cat:'Kitchen',emoji:'🥛',name:'milk',tip:'Proteins & fats for chemistry experiments'},
+  {cat:'Kitchen',emoji:'🫒',name:'vegetable oil',tip:'Immiscible with water — density experiments'},
+  // Craft
+  {cat:'Craft/Office',emoji:'📄',name:'paper',tip:'Chromatography, absorption, folding experiments'},
+  {cat:'Craft/Office',emoji:'🖊',name:'tape',tip:'Adhesion testing & static electricity'},
+  {cat:'Craft/Office',emoji:'🔵',name:'rubber bands',tip:'Study elasticity and stored potential energy'},
+  {cat:'Craft/Office',emoji:'🎈',name:'balloons',tip:'Air pressure, static electricity, lung models'},
+  {cat:'Craft/Office',emoji:'✏️',name:'markers',tip:'Ink for paper chromatography experiments'},
+  {cat:'Craft/Office',emoji:'📦',name:'cardboard',tip:'Structural engineering & model building'},
+  {cat:'Craft/Office',emoji:'🧵',name:'string',tip:'Pendulums, wave & tension experiments'},
+  {cat:'Craft/Office',emoji:'🪡',name:'yarn',tip:'Weaving patterns & fiber strength tests'},
+  // Electronics
+  {cat:'Electronics',emoji:'🔋',name:'batteries (AA)',tip:'Power source for circuit experiments'},
+  {cat:'Electronics',emoji:'🔦',name:'flashlight',tip:'Light source for optics & shadow experiments'},
+  {cat:'Electronics',emoji:'🔌',name:'wire',tip:'Electrical conductor for circuit building'},
+  {cat:'Electronics',emoji:'💡',name:'small bulb',tip:'Complete simple circuits & test conductors'},
+  // Outdoor
+  {cat:'Outdoor',emoji:'🌱',name:'dirt/soil',tip:'Erosion, seed germination & filtering'},
+  {cat:'Outdoor',emoji:'🪨',name:'rocks',tip:'Density, hardness & geology experiments'},
+  {cat:'Outdoor',emoji:'🍂',name:'leaves',tip:'Photosynthesis, transpiration & pigments'},
+  {cat:'Outdoor',emoji:'🌿',name:'grass',tip:'Plant biology & decomposition studies'},
+  {cat:'Outdoor',emoji:'☀️',name:'sunlight',tip:'Solar energy, photosynthesis & evaporation'},
+];
 
-// ─── STATE ───
-let currentExperiment = null;
-let currentGrade = '';
-let currentSupplies = '';
+const COMBOS = [
+  {icon:'🌋',name:'Classic Volcano',supplies:['baking soda','vinegar','dish soap','food coloring'],desc:'Erupt an acid-base volcano'},
+  {icon:'🌪️',name:'Tornado Bottle',supplies:['water','dish soap','food coloring'],desc:'Vortex fluid dynamics'},
+  {icon:'🧬',name:'Oobleck',supplies:['cornstarch','water','food coloring'],desc:'Non-Newtonian fluid magic'},
+  {icon:'💎',name:'Crystal Art',supplies:['salt','water','string','food coloring'],desc:'Grow geometric salt crystals'},
+  {icon:'🌈',name:'Density Tower',supplies:['water','sugar','salt','dish soap','food coloring','vegetable oil'],desc:'Layer liquids by density'},
+  {icon:'⚡',name:'Static Explorer',supplies:['balloons','paper','rubber bands'],desc:'Explore static electricity'},
+  {icon:'💡',name:'Simple Circuit',supplies:['batteries (AA)','wire','small bulb','cardboard'],desc:'Build a working circuit'},
+  {icon:'🎨',name:'Chromatography',supplies:['markers','paper','water'],desc:'Separate ink pigments'},
+];
 
-// ─── CHIP RENDERING ───
-const categoryTabs = document.getElementById('categoryTabs');
-const chipGrid = document.getElementById('chipGrid');
-let activeCategory = 'Kitchen';
-
-function renderCategories() {
-  categoryTabs.innerHTML = '';
-  Object.keys(SUPPLIES).forEach(cat => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-tab' + (cat === activeCategory ? ' active' : '');
-    btn.textContent = cat;
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', cat === activeCategory);
-    btn.addEventListener('click', () => {
-      activeCategory = cat;
-      renderCategories();
-      renderChips();
-    });
-    categoryTabs.appendChild(btn);
+// ─────────────────────────────────────────────
+//  GRADE BUTTONS
+// ─────────────────────────────────────────────
+let selectedGrade = '';
+document.querySelectorAll('.grade-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedGrade = btn.dataset.grade;
   });
-}
-
-function getActiveSupplies() {
-  return document.getElementById('suppliesInput').value
-    .split('\n').map(s => s.trim().toLowerCase()).filter(Boolean);
-}
-
-function renderChips() {
-  chipGrid.innerHTML = '';
-  const active = getActiveSupplies();
-  (SUPPLIES[activeCategory] || []).forEach(item => {
-    const chip = document.createElement('button');
-    const isActive = active.includes(item.name.toLowerCase());
-    chip.className = 'chip' + (isActive ? ' active' : '');
-    chip.setAttribute('role', 'listitem');
-    chip.setAttribute('aria-label', item.name);
-    chip.innerHTML = `${item.emoji} ${item.name}<span class="chip-tooltip">${item.tip}</span>`;
-    chip.addEventListener('click', () => {
-      const textarea = document.getElementById('suppliesInput');
-      const lines = textarea.value.split('\n').map(s => s.trim()).filter(Boolean);
-      const idx = lines.findIndex(l => l.toLowerCase() === item.name.toLowerCase());
-      if (idx >= 0) lines.splice(idx, 1);
-      else lines.push(item.name);
-      textarea.value = lines.join('\n');
-      renderChips();
-      updateLegend();
-    });
-    chipGrid.appendChild(chip);
-  });
-}
-
-renderCategories();
-renderChips();
-
-document.getElementById('suppliesInput').addEventListener('input', () => {
-  renderChips();
-  updateLegend();
 });
 
-// ─── LEGEND ───
+// ─────────────────────────────────────────────
+//  SUPPLY TAG INPUT
+// ─────────────────────────────────────────────
+let selectedSupplies = [];
+let dropHighlight = -1;
+
+const supplyBox = document.getElementById('supplyBox');
+const supplyInput = document.getElementById('supplySearchInput');
+const dropdown = document.getElementById('supplyDropdown');
+
+function getSupplyMeta(name) {
+  return ALL_SUPPLIES.find(s => s.name.toLowerCase() === name.toLowerCase());
+}
+
+function renderTags() {
+  // Remove existing tags
+  supplyBox.querySelectorAll('.supply-tag').forEach(t => t.remove());
+  selectedSupplies.forEach(name => {
+    const meta = getSupplyMeta(name);
+    const emoji = meta ? meta.emoji : '🧪';
+    const tag = document.createElement('span');
+    tag.className = 'supply-tag';
+    tag.innerHTML = `<span class="tag-emoji">${emoji}</span>${name}<button aria-label="Remove ${name}" data-name="${name}">×</button>`;
+    tag.querySelector('button').addEventListener('click', e => {
+      e.stopPropagation();
+      removeSupply(name);
+    });
+    supplyBox.insertBefore(tag, supplyInput);
+  });
+  updateLegend();
+}
+
+function addSupply(name) {
+  if (!selectedSupplies.includes(name)) {
+    selectedSupplies.push(name);
+    renderTags();
+  }
+  supplyInput.value = '';
+  renderDropdown('');
+  supplyInput.focus();
+}
+
+function removeSupply(name) {
+  selectedSupplies = selectedSupplies.filter(s => s !== name);
+  renderTags();
+  renderDropdown(supplyInput.value);
+}
+
+function renderDropdown(query) {
+  dropHighlight = -1;
+  const q = query.toLowerCase().trim();
+  let filtered = q
+    ? ALL_SUPPLIES.filter(s => s.name.includes(q) || s.cat.toLowerCase().includes(q))
+    : ALL_SUPPLIES;
+
+  if (!filtered.length && q) {
+    dropdown.innerHTML = `<div class="drop-empty">No match — press Enter to add "${escHtml(query)}"</div>`;
+    dropdown.classList.add('open');
+    return;
+  }
+  if (!q && !filtered.length) { dropdown.classList.remove('open'); return; }
+
+  // Group by category
+  const cats = {};
+  filtered.forEach(s => { (cats[s.cat] = cats[s.cat] || []).push(s); });
+
+  let html = '';
+  Object.entries(cats).forEach(([cat, items]) => {
+    html += `<div class="drop-category">${cat}</div>`;
+    items.forEach(s => {
+      const sel = selectedSupplies.includes(s.name);
+      html += `<div class="drop-item${sel?' selected':''}" data-name="${escHtml(s.name)}" role="option" aria-selected="${sel}">
+        <span class="drop-emoji">${s.emoji}</span>
+        <span class="drop-name">${escHtml(s.name)}</span>
+        <span class="drop-tip">${sel?'added':escHtml(s.tip.slice(0,32)+'…')}</span>
+      </div>`;
+    });
+  });
+
+  dropdown.innerHTML = html;
+  dropdown.classList.add('open');
+
+  dropdown.querySelectorAll('.drop-item:not(.selected)').forEach(item => {
+    item.addEventListener('mousedown', e => {
+      e.preventDefault();
+      addSupply(item.dataset.name);
+    });
+  });
+}
+
+supplyInput.addEventListener('focus', () => renderDropdown(supplyInput.value));
+supplyInput.addEventListener('input', () => renderDropdown(supplyInput.value));
+supplyInput.addEventListener('keydown', e => {
+  const items = [...dropdown.querySelectorAll('.drop-item:not(.selected)')];
+  if (e.key === 'ArrowDown') {
+    e.preventDefault(); dropHighlight = Math.min(dropHighlight+1, items.length-1);
+    items.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault(); dropHighlight = Math.max(dropHighlight-1, 0);
+    items.forEach((el,i) => el.classList.toggle('highlighted', i===dropHighlight));
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (dropHighlight >= 0 && items[dropHighlight]) addSupply(items[dropHighlight].dataset.name);
+    else if (supplyInput.value.trim()) addSupply(supplyInput.value.trim());
+  } else if (e.key === 'Backspace' && !supplyInput.value && selectedSupplies.length) {
+    removeSupply(selectedSupplies[selectedSupplies.length-1]);
+  } else if (e.key === 'Escape') {
+    dropdown.classList.remove('open');
+  }
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('supplyWrap').contains(e.target)) dropdown.classList.remove('open');
+});
+
+// ─────────────────────────────────────────────
+//  COMBOS
+// ─────────────────────────────────────────────
+const combosGrid = document.getElementById('combosGrid');
+COMBOS.forEach(combo => {
+  const card = document.createElement('div');
+  card.className = 'combo-card';
+  card.setAttribute('role','button');
+  card.setAttribute('tabindex','0');
+  card.setAttribute('aria-label',`Load ${combo.name} combo`);
+  card.innerHTML = `<span class="combo-icon">${combo.icon}</span><div class="combo-name">${combo.name}</div><div class="combo-supplies">${combo.supplies.join(' · ')}</div>`;
+  card.addEventListener('click', () => {
+    combo.supplies.forEach(s => { if (!selectedSupplies.includes(s)) selectedSupplies.push(s); });
+    renderTags();
+    dropdown.classList.remove('open');
+    showToast(`✨ Loaded "${combo.name}" combo`);
+  });
+  card.addEventListener('keypress', e => { if (e.key==='Enter') card.click(); });
+  combosGrid.appendChild(card);
+});
+
+// ─────────────────────────────────────────────
+//  LEGEND
+// ─────────────────────────────────────────────
 function updateLegend() {
-  const supplies = getActiveSupplies();
-  const legend = document.getElementById('supplyLegend');
-  const items = document.getElementById('legendItems');
-  if (!supplies.length) { legend.style.display = 'none'; return; }
-  legend.style.display = 'block';
-  items.innerHTML = supplies.map(s => {
-    const found = Object.values(SUPPLIES).flat().find(c => c.name.toLowerCase() === s.toLowerCase());
-    const emoji = found ? found.emoji : '🧪';
-    return `<span class="legend-item">${emoji} ${s}</span>`;
+  const lc = document.getElementById('legendCard');
+  const lt = document.getElementById('legendTags');
+  if (!selectedSupplies.length) { lc.style.display='none'; return; }
+  lc.style.display='block';
+  lt.innerHTML = selectedSupplies.map(s => {
+    const m = getSupplyMeta(s);
+    return `<span class="legend-tag">${m?m.emoji:'🧪'} ${escHtml(s)}</span>`;
   }).join('');
 }
 
-// ─── API KEY MODAL ───
-const modalOverlay = document.getElementById('modalOverlay');
+// ─────────────────────────────────────────────
+//  API KEY MODAL
+// ─────────────────────────────────────────────
+const overlay = document.getElementById('overlay');
 document.getElementById('settingsBtn').addEventListener('click', () => {
-  modalOverlay.classList.add('visible');
-  const key = sessionStorage.getItem('anthropic_key') || '';
-  document.getElementById('apiKeyInput').value = key;
+  overlay.classList.add('on');
+  document.getElementById('keyInput').value = sessionStorage.getItem('api_key') || '';
 });
-document.getElementById('closeModalBtn').addEventListener('click', () => modalOverlay.classList.remove('visible'));
-document.getElementById('clearKeyBtn').addEventListener('click', () => {
-  sessionStorage.removeItem('anthropic_key');
-  document.getElementById('apiKeyInput').value = '';
-  document.getElementById('keyBadge').classList.remove('visible');
-  showToast('API key cleared');
-  modalOverlay.classList.remove('visible');
+document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('on'));
+overlay.addEventListener('click', e => { if(e.target===overlay) overlay.classList.remove('on'); });
+document.getElementById('eyeBtn').addEventListener('click', () => {
+  const inp = document.getElementById('keyInput');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+});
+document.getElementById('clearBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('api_key');
+  document.getElementById('keyInput').value='';
+  document.getElementById('keyPill').classList.remove('on');
+  showToast('Key cleared'); overlay.classList.remove('on');
 });
 document.getElementById('saveKeyBtn').addEventListener('click', () => {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) { showToast('Please enter an API key'); return; }
-  sessionStorage.setItem('anthropic_key', key);
-  document.getElementById('keyBadge').classList.add('visible');
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k) { showToast('⚠️ Enter an API key first'); return; }
+  sessionStorage.setItem('api_key', k);
+  document.getElementById('keyPill').classList.add('on');
   showToast('✓ API key saved for this session');
-  modalOverlay.classList.remove('visible');
+  overlay.classList.remove('on');
 });
-document.getElementById('toggleReveal').addEventListener('click', () => {
-  const inp = document.getElementById('apiKeyInput');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-});
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('visible'); });
-// Restore badge if key in session
-if (sessionStorage.getItem('anthropic_key')) document.getElementById('keyBadge').classList.add('visible');
+document.addEventListener('keydown', e => { if(e.key==='Escape') overlay.classList.remove('on'); });
+if (sessionStorage.getItem('api_key')) document.getElementById('keyPill').classList.add('on');
 
-// ─── TOAST ───
-function showToast(msg, duration = 3000) {
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+function showToast(msg, dur=3000) {
   const t = document.createElement('div');
-  t.className = 'toast'; t.textContent = msg;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => t.remove(), duration);
+  t.className='toast'; t.textContent=msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(() => t.remove(), dur);
 }
 
-// ─── RIPPLE ───
-document.getElementById('generateBtn').addEventListener('click', function(e) {
-  const btn = this;
-  const circle = document.createElement('span');
-  const d = Math.max(btn.offsetWidth, btn.offsetHeight);
-  const rect = btn.getBoundingClientRect();
-  circle.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX-rect.left-d/2}px;top:${e.clientY-rect.top-d/2}px`;
-  circle.className = 'ripple';
-  btn.appendChild(circle);
-  setTimeout(() => circle.remove(), 700);
-  generateExperiment();
-});
-
-// ─── SYSTEM PROMPT ───
+// ─────────────────────────────────────────────
+//  GENERATE
+// ─────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are an expert K-12 science educator who specializes in hands-on, inquiry-based experiments. You create safe, engaging, age-appropriate science experiments using only the materials provided.
 
-Your response must begin with exactly this JSON block (on its own line, do not wrap in markdown fences):
+Your response must begin with exactly this JSON block on its own line (no markdown fences, no extra text before it):
 {"complexity": <1-5>, "time": <1-5>, "mess": <1-5>, "title": "<experiment title>"}
 
-Then provide a complete experiment in markdown format with the following sections:
+Then provide a complete experiment in markdown format:
 ## 🔬 [Experiment Title]
 **The Big Question:** (A curiosity-sparking question)
 **What You'll Learn:** (1-2 sentences on the scientific concept)
 **Materials:** (bulleted list — use only the provided supplies)
 **Safety Notes:** (brief, age-appropriate safety tips)
-**Procedure:** (numbered steps, clear and simple language appropriate for the grade level)
+**Procedure:** (numbered steps, clear language for the grade level)
 **What to Observe:** (what students should look for)
 **The Science Behind It:** (simple explanation of why it works)
 **Extension Ideas:** (2-3 ideas to go further)`;
 
-// ─── GENERATE ───
-async function generateExperiment() {
-  const grade = document.getElementById('gradeSelect').value;
-  const supplies = document.getElementById('suppliesInput').value.trim();
-  const apiKey = sessionStorage.getItem('anthropic_key');
+document.getElementById('generateBtn').addEventListener('click', function(e) {
+  // Ripple
+  const btn = this, d = Math.max(btn.offsetWidth, btn.offsetHeight);
+  const rect = btn.getBoundingClientRect();
+  const rip = document.createElement('span');
+  rip.className='ripple';
+  rip.style.cssText=`width:${d}px;height:${d}px;left:${e.clientX-rect.left-d/2}px;top:${e.clientY-rect.top-d/2}px`;
+  btn.appendChild(rip);
+  setTimeout(()=>rip.remove(), 600);
+  generateExperiment();
+});
 
-  // Validations
-  if (!apiKey) {
-    showError('Please set your Anthropic API key first (⚙️ Settings button).');
-    return;
-  }
-  if (!grade) { showError('Please select a grade level.'); return; }
-  if (!supplies) { showError('Please enter at least one supply.'); return; }
+async function generateExperiment() {
+  const apiKey = sessionStorage.getItem('api_key');
+  if (!apiKey) { showError('Set your Anthropic API key first — click ⚙️ Settings in the header.'); return; }
+  if (!selectedGrade) { showError('Please select a grade level before generating.'); return; }
+  if (!selectedSupplies.length) { showError('Add at least one supply to generate an experiment.'); return; }
 
   clearError();
   setLoading(true);
-  document.getElementById('resultSection').classList.remove('visible');
-  document.getElementById('subsSection').classList.remove('visible');
+  document.getElementById('resultSection').classList.remove('on');
+  document.getElementById('subsSection').classList.remove('on');
 
-  const userPrompt = `Grade level context: ${grade}\nAvailable supplies:\n${supplies}`;
+  const suppliesList = selectedSupplies.join(', ');
+  const userPrompt = `Grade level: ${selectedGrade}\nAvailable supplies: ${suppliesList}`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -852,311 +714,204 @@ async function generateExperiment() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
+        model: 'claude-opus-4-5',
+        max_tokens: 1600,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }]
       })
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error?.message || `API error ${res.status}`);
+      let msg = `API error ${res.status}`;
+      try { const j = await res.json(); msg = j.error?.message || msg; } catch(e2){}
+      throw new Error(msg);
     }
 
     const data = await res.json();
-    const rawText = data.content[0].text;
+    const raw = data.content[0].text;
 
-    // Parse JSON block
-    const jsonMatch = rawText.match(/^\s*(\{[^\n]+\})/);
-    let ratings = { complexity: 3, time: 3, mess: 3, title: 'Science Experiment' };
-    let markdown = rawText;
-
-    if (jsonMatch) {
-      try {
-        ratings = { ...ratings, ...JSON.parse(jsonMatch[1]) };
-        markdown = rawText.slice(jsonMatch[0].length).trim();
-      } catch(e) {}
+    // Parse ratings JSON
+    const jMatch = raw.match(/^\s*(\{[^\n\r]+\})/);
+    let ratings = {complexity:3,time:3,mess:3,title:'Science Experiment'};
+    let markdown = raw;
+    if (jMatch) {
+      try { ratings = {...ratings,...JSON.parse(jMatch[1])}; markdown = raw.slice(jMatch[0].length).trim(); }
+      catch(e2){}
     }
 
-    currentExperiment = { markdown, ratings, grade, supplies, timestamp: Date.now() };
-    currentGrade = grade;
-    currentSupplies = supplies;
-
+    currentExp = { markdown, ratings, grade: selectedGrade, supplies: suppliesList, timestamp: Date.now() };
     renderResult(markdown, ratings);
     setLoading(false);
+    fetchSubs(suppliesList, apiKey);
 
-    // Run substitutions in parallel
-    fetchSubstitutions(supplies, apiKey);
-
-  } catch(e) {
+  } catch(err) {
     setLoading(false);
-    showError('Experiment generation failed: ' + e.message);
+    showError(`Generation failed: ${err.message}`);
   }
 }
+
+let currentExp = null;
 
 function renderResult(markdown, ratings) {
   // Difficulty badge
-  const badge = document.getElementById('difficultyBadge');
-  const rows = document.getElementById('badgeRows');
-  rows.innerHTML = `
-    <div class="badge-item">
-      <div class="badge-label">Complexity</div>
-      <div class="badge-stars">${stars(ratings.complexity, '⭐')}</div>
-    </div>
-    <div class="badge-item">
-      <div class="badge-label">Time Required</div>
-      <div class="badge-stars">${stars(ratings.time, '⏱')}</div>
-    </div>
-    <div class="badge-item">
-      <div class="badge-label">Mess Level</div>
-      <div class="badge-stars">${stars(ratings.mess, '🧹')}</div>
-    </div>
-  `;
-  badge.classList.add('visible');
-
-  // Experiment HTML
-  document.getElementById('experimentContent').innerHTML = marked.parse(markdown);
-  document.getElementById('resultSection').classList.add('visible');
+  document.getElementById('diffRows').innerHTML = [
+    ['Complexity','⭐',ratings.complexity],
+    ['Time Required','⏱',ratings.time],
+    ['Mess Level','🧹',ratings.mess],
+  ].map(([label,emoji,val])=>`
+    <div class="diff-item">
+      <div class="diff-label">${label}</div>
+      <div class="diff-val">${emoji.repeat(Math.min(5,Math.max(1,val)))}${'<span style="opacity:.2">'+emoji.repeat(5-Math.min(5,Math.max(1,val)))+'</span>'}</div>
+    </div>`).join('');
+  document.getElementById('diffBadge').classList.add('on');
+  document.getElementById('expContent').innerHTML = marked.parse(markdown);
+  document.getElementById('resultSection').classList.add('on');
 }
 
-function stars(n, emoji) {
-  n = Math.max(1, Math.min(5, n));
-  return emoji.repeat(n) + '<span style="opacity:0.2">' + emoji.repeat(5 - n) + '</span>';
-}
+// ─────────────────────────────────────────────
+//  SUBSTITUTIONS
+// ─────────────────────────────────────────────
+async function fetchSubs(supplies, apiKey) {
+  const prompt = `For each supply below, suggest 2-3 easy household alternatives in this exact format:
+**[Supply]** → Alt 1, Alt 2 — one-sentence reason
 
-// ─── SUBSTITUTIONS ───
-async function fetchSubstitutions(supplies, apiKey) {
-  const supplyList = supplies.split('\n').map(s => s.trim()).filter(Boolean);
-  if (!supplyList.length) return;
-
-  const prompt = `For each of these supplies used in a science experiment, suggest 2-3 common household alternatives. Keep it brief.
-
-Supplies: ${supplyList.join(', ')}
-
-For each supply, respond in this exact format:
-**[Original Supply]** → [Alternative 1], [Alternative 2] — [brief reason why these work]
-
-Only list substitutions, no intro text.`;
-
+Supplies: ${supplies}
+Only list the substitutions, no intro.`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        messages: [{ role: 'user', content: prompt }]
-      })
+      method:'POST',
+      headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
-
     if (!res.ok) return;
-    const data = await res.json();
-    const text = data.content[0].text.trim();
-
-    const lines = text.split('\n').filter(l => l.trim());
-    const subsContent = document.getElementById('subsContent');
-    subsContent.innerHTML = lines.map(line => {
-      if (!line.trim()) return '';
-      return `<div class="sub-card">${marked.parseInline(line)}</div>`;
-    }).join('');
-
-    document.getElementById('subsSection').classList.add('visible');
-  } catch(e) {}
+    const d = await res.json();
+    const lines = d.content[0].text.trim().split('\n').filter(l=>l.trim());
+    document.getElementById('subsContent').innerHTML = lines.map(l=>`<div class="sub-card">${marked.parseInline(l)}</div>`).join('');
+    document.getElementById('subsSection').classList.add('on');
+  } catch(e){}
 }
-
-document.getElementById('subsToggle').addEventListener('click', function() {
+document.getElementById('subsToggle').addEventListener('click', function(){
   this.classList.toggle('open');
-  const body = document.getElementById('subsBody');
-  body.classList.toggle('open');
-  this.setAttribute('aria-expanded', body.classList.contains('open'));
+  const b = document.getElementById('subsBody');
+  b.classList.toggle('open');
+  this.setAttribute('aria-expanded', b.classList.contains('open'));
 });
 
-// ─── SAVE / LOAD ───
-const MAX_SAVED = 10;
-
-function getSaved() {
-  try { return JSON.parse(localStorage.getItem('saved_experiments') || '[]'); }
-  catch(e) { return []; }
-}
-
-function setSaved(arr) {
-  localStorage.setItem('saved_experiments', JSON.stringify(arr));
-}
+// ─────────────────────────────────────────────
+//  SAVE / LOAD
+// ─────────────────────────────────────────────
+const MAX = 10;
+const getSaved = () => { try { return JSON.parse(localStorage.getItem('sci_saved')||'[]'); } catch(e){ return []; } };
+const setSaved = arr => localStorage.setItem('sci_saved', JSON.stringify(arr));
 
 document.getElementById('saveBtn').addEventListener('click', () => {
-  if (!currentExperiment) return;
+  if (!currentExp) return;
   let saved = getSaved();
-  if (saved.length >= MAX_SAVED) {
-    saved.shift();
-    showToast('Oldest experiment removed to make room');
-  }
-  saved.push({
-    id: currentExperiment.timestamp,
-    title: currentExperiment.ratings.title,
-    grade: currentExperiment.grade,
-    markdown: currentExperiment.markdown,
-    ratings: currentExperiment.ratings,
-    supplies: currentExperiment.supplies,
-    timestamp: currentExperiment.timestamp
-  });
+  if (saved.length >= MAX) { saved.shift(); showToast('Oldest experiment removed to make room'); }
+  saved.push({...currentExp});
   setSaved(saved);
-  renderSavedList();
+  renderSaved();
   showToast('💾 Experiment saved!');
 });
 
-function renderSavedList() {
+function renderSaved() {
   const saved = getSaved();
+  document.getElementById('savedCount').textContent = saved.length;
   const list = document.getElementById('savedList');
   if (!saved.length) {
-    list.innerHTML = '<div class="empty-saved">No saved experiments yet.<br>Generate and save one!</div>';
+    list.innerHTML='<div class="empty-saved"><div class="empty-icon">🧪</div>No saved experiments yet.</div>';
     return;
   }
-  list.innerHTML = saved.slice().reverse().map(exp => {
-    const date = new Date(exp.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return `
-      <div class="saved-item" data-id="${exp.id}" role="button" tabindex="0" aria-label="Load: ${exp.title}">
-        <div class="saved-item-info">
-          <div class="saved-item-title">${escHtml(exp.title)}</div>
-          <div class="saved-item-meta">Grade ${escHtml(exp.grade)} · ${date}</div>
-        </div>
-        <button class="btn-delete" data-id="${exp.id}" aria-label="Delete ${escHtml(exp.title)}">🗑</button>
-      </div>`;
+  const ICONS = ['🔵','🟣','🟤','🟠','🔴','🟡','🟢','⚪','🔷','🔶'];
+  list.innerHTML = saved.slice().reverse().map((exp,i) => {
+    const d = new Date(exp.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="saved-item" data-id="${exp.timestamp}" role="button" tabindex="0" aria-label="Load: ${escHtml(exp.ratings.title)}">
+      <div class="saved-thumb">${ICONS[i%ICONS.length]}</div>
+      <div class="saved-info">
+        <div class="saved-title">${escHtml(exp.ratings.title)}</div>
+        <div class="saved-meta">Grade ${escHtml(exp.grade)} · ${d}</div>
+      </div>
+      <button class="btn-del" data-id="${exp.timestamp}" aria-label="Delete">🗑</button>
+    </div>`;
   }).join('');
-
-  list.querySelectorAll('.saved-item').forEach(item => {
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('btn-delete')) return;
-      const id = parseInt(item.dataset.id);
-      loadSavedExperiment(id);
+  list.querySelectorAll('.saved-item').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.classList.contains('btn-del')) return;
+      const exp = getSaved().find(s => s.timestamp===parseInt(el.dataset.id));
+      if (exp) { currentExp=exp; renderResult(exp.markdown,exp.ratings); document.getElementById('subsSection').classList.remove('on'); showToast('Loaded: '+exp.ratings.title); }
     });
-    item.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') item.click();
-    });
+    el.addEventListener('keypress', e => { if(e.key==='Enter') el.click(); });
   });
-
-  list.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  list.querySelectorAll('.btn-del').forEach(btn => {
+    btn.addEventListener('click', e => {
       e.stopPropagation();
       const id = parseInt(btn.dataset.id);
-      let saved = getSaved().filter(s => s.id !== id);
-      setSaved(saved);
-      renderSavedList();
-      showToast('Experiment deleted');
+      setSaved(getSaved().filter(s => s.timestamp!==id));
+      renderSaved(); showToast('Experiment deleted');
     });
   });
 }
+renderSaved();
 
-function loadSavedExperiment(id) {
-  const saved = getSaved().find(s => s.id === id);
-  if (!saved) return;
-  currentExperiment = saved;
-  currentGrade = saved.grade;
-  currentSupplies = saved.supplies;
-  renderResult(saved.markdown, saved.ratings);
-  document.getElementById('subsSection').classList.remove('visible');
-  document.getElementById('errorMsg').classList.remove('visible');
-  showToast('Loaded: ' + saved.title);
-}
-
-renderSavedList();
-
-// ─── PRINT WORKSHEET ───
+// ─────────────────────────────────────────────
+//  PRINT WORKSHEET
+// ─────────────────────────────────────────────
 document.getElementById('printBtn').addEventListener('click', () => {
-  if (!currentExperiment) return;
-  const { ratings, supplies, grade } = currentExperiment;
-  const supplyList = supplies.split('\n').map(s => s.trim()).filter(Boolean);
-
-  const worksheetHTML = `
-    <div style="font-family:'Source Serif 4',Georgia,serif;max-width:700px;margin:0 auto;padding:20px;color:#1B2A3B;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <svg width="50" height="60" viewBox="0 0 60 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px;">
-          <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" fill="#2A7FBF" opacity="0.3"/>
-          <path d="M22 24 L8 60 Q6 66 12 68 L48 68 Q54 66 52 60 L38 24 Z" stroke="#2A7FBF" stroke-width="2" fill="none"/>
-          <rect x="22" y="2" width="16" height="22" rx="2" fill="#2A7FBF" opacity="0.3"/>
-          <line x1="22" y1="2" x2="22" y2="26" stroke="#2A7FBF" stroke-width="2"/>
-          <line x1="38" y1="2" x2="38" y2="26" stroke="#2A7FBF" stroke-width="2"/>
-          <line x1="20" y1="2" x2="40" y2="2" stroke="#2A7FBF" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <h1 style="font-family:'Playfair Display',serif;font-size:1.8rem;margin:0;">${escHtml(ratings.title)}</h1>
-        <p style="color:#888;margin-top:4px;">Grade Level: ${escHtml(grade)} &nbsp;|&nbsp; Science Observation Worksheet</p>
-        <hr style="border:none;border-top:2px solid #2A7FBF;margin:12px 0;">
-      </div>
-      <section style="margin-bottom:20px;">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">📝 My Hypothesis</h2>
-        <p style="color:#888;font-size:0.85rem;margin-bottom:4px;">I think that…</p>
-        <div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>
-        <div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>
-        <div style="border-bottom:1.5px solid #ccc;height:28px;"></div>
-      </section>
-      <section style="margin-bottom:20px;">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🧪 Materials Checklist</h2>
-        ${supplyList.map(s => `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;"><input type="checkbox" style="width:16px;height:16px;"> <span>${escHtml(s)}</span></div>`).join('')}
-      </section>
-      <section style="margin-bottom:20px;">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🔢 Procedure Steps</h2>
-        ${[1,2,3,4,5,6].map(n => `<div style="margin-bottom:10px;"><strong style="color:#3ABFB0;">${n}.</strong> <div style="border-bottom:1px solid #ccc;height:22px;margin-top:4px;"></div></div>`).join('')}
-      </section>
-      <section style="margin-bottom:20px;">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">🔭 Observations</h2>
-        <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
-          <tr style="background:#f0f8ff;">
-            <th style="border:1px solid #ccc;padding:8px;text-align:left;">What I did</th>
-            <th style="border:1px solid #ccc;padding:8px;text-align:left;">What I noticed</th>
-          </tr>
-          ${[1,2,3,4].map(() => `<tr><td style="border:1px solid #ccc;padding:8px;height:32px;"></td><td style="border:1px solid #ccc;padding:8px;height:32px;"></td></tr>`).join('')}
-        </table>
-      </section>
-      <section style="margin-bottom:20px;">
-        <h2 style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#2A7FBF;margin-bottom:8px;">💡 My Conclusion</h2>
-        <p style="color:#888;font-size:0.85rem;margin-bottom:4px;">What did I learn? Was my hypothesis correct?</p>
-        ${[1,2,3,4].map(() => `<div style="border-bottom:1.5px solid #ccc;margin-bottom:8px;height:28px;"></div>`).join('')}
-      </section>
-      <footer style="text-align:center;margin-top:24px;font-size:0.78rem;color:#aaa;border-top:1px solid #eee;padding-top:12px;">
-        Generated with Science Experiment Generator ⚗️
-      </footer>
-    </div>`;
-
-  const printWin = window.open('', '_blank');
-  printWin.document.write(`<!DOCTYPE html><html><head><title>Worksheet — ${escHtml(ratings.title)}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
-    <style>body{margin:0;background:#fff;}@media print{body{margin:0;}}</style>
-    </head><body>${worksheetHTML}<script>window.onload=()=>window.print();<\/script></body></html>`);
-  printWin.document.close();
+  if (!currentExp) return;
+  const {ratings, supplies} = currentExp;
+  const supplyList = supplies.split(',').map(s=>s.trim()).filter(Boolean);
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Worksheet — ${escHtml(ratings.title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body{font-family:'Inter',sans-serif;max-width:700px;margin:40px auto;color:#1A2433;padding:0 20px}
+h1{font-family:'Playfair Display',serif;font-size:1.7rem;margin-bottom:4px}
+.meta{color:#9CA3AF;font-size:.82rem;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid #0D9488}
+h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#0D9488;font-weight:700;margin:24px 0 10px}
+.line{border-bottom:1.5px solid #E2DDD8;height:28px;margin-bottom:8px}
+.check-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.check-box{width:16px;height:16px;border:2px solid #9CA3AF;border-radius:3px;flex-shrink:0}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#F0FDF4;border:1px solid #D1FAE5;padding:8px 12px;text-align:left;font-weight:600}
+td{border:1px solid #E2DDD8;padding:8px 12px;height:36px}
+.footer{text-align:center;font-size:.72rem;color:#D1D5DB;margin-top:32px;padding-top:12px;border-top:1px solid #F3F4F6}
+@media print{body{margin:20px auto}}
+</style></head><body>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+<svg width="40" height="48" viewBox="0 0 70 84" fill="none"><path d="M27 26 L10 66 Q7.5 74 15 76 L55 76 Q62.5 74 60 66 L43 26 Z" fill="#2563EB" opacity=".2"/><path d="M27 26 L10 66 Q7.5 74 15 76 L55 76 Q62.5 74 60 66 L43 26 Z" stroke="#2563EB" stroke-width="2.5" fill="none"/><rect x="27" y="2" width="16" height="24" rx="2.5" fill="#2563EB" opacity=".25"/><line x1="27" y1="2" x2="27" y2="28" stroke="#2563EB" stroke-width="2.2"/><line x1="43" y1="2" x2="43" y2="28" stroke="#2563EB" stroke-width="2.2"/><line x1="24" y1="2" x2="46" y2="2" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round"/></svg>
+<div><h1>${escHtml(ratings.title)}</h1><div class="meta">Grade ${escHtml(currentExp.grade)} · Science Observation Worksheet</div></div>
+</div>
+<h2>📝 Hypothesis</h2>
+<p style="font-size:.8rem;color:#9CA3AF;margin:0 0 6px">I think that…</p>
+${[1,2,3].map(()=>'<div class="line"></div>').join('')}
+<h2>🧪 Materials Checklist</h2>
+${supplyList.map(s=>`<div class="check-row"><div class="check-box"></div><span>${escHtml(s)}</span></div>`).join('')}
+<h2>🔢 Procedure Steps</h2>
+${[1,2,3,4,5,6].map(n=>`<div style="margin-bottom:10px"><strong style="color:#0D9488">${n}.</strong><div class="line" style="margin-top:4px"></div></div>`).join('')}
+<h2>🔭 Observations</h2>
+<table><tr><th>What I Did</th><th>What I Noticed</th></tr>${[1,2,3,4].map(()=>'<tr><td></td><td></td></tr>').join('')}</table>
+<h2>💡 Conclusion</h2>
+${[1,2,3,4].map(()=>'<div class="line"></div>').join('')}
+<div class="footer">Generated with Science Experiment Generator ⚗️</div>
+<script>window.onload=()=>window.print();<\/script>
+</body></html>`);
+  w.document.close();
 });
 
-// ─── UTILS ───
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function setLoading(on) {
-  const wrap = document.getElementById('loadingWrap');
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setLoading(on){
+  document.getElementById('loadingWrap').classList.toggle('on', on);
   const btn = document.getElementById('generateBtn');
-  if (on) { wrap.classList.add('visible'); btn.disabled = true; btn.textContent = 'Generating…'; }
-  else { wrap.classList.remove('visible'); btn.disabled = false; btn.textContent = 'Generate Experiment ⚗️'; }
+  btn.disabled = on;
+  btn.innerHTML = on
+    ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur=".8s" repeatCount="indefinite"/></path></svg> Generating…`
+    : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/><circle cx="17" cy="17" r="4"/><path d="M19.5 19.5l2 2"/></svg> Generate Experiment <span class="btn-arrow">→</span>`;
 }
-
-function showError(msg) {
-  const el = document.getElementById('errorMsg');
-  el.textContent = '⚠️ ' + msg;
-  el.classList.add('visible');
-}
-
-function clearError() {
-  document.getElementById('errorMsg').classList.remove('visible');
-}
-
-// ─── KEYBOARD ───
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') document.getElementById('modalOverlay').classList.remove('visible');
-  if (e.key === 'Enter' && e.ctrlKey) document.getElementById('generateBtn').click();
-});
+function showError(msg){ const e=document.getElementById('errorBox'); document.getElementById('errorText').textContent=msg; e.classList.add('on'); }
+function clearError(){ document.getElementById('errorBox').classList.remove('on'); }
 </script>
 </body>
 </html>
