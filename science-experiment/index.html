@@ -260,6 +260,118 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
   .combos-grid{grid-template-columns:repeat(2,1fr)}
   .card{padding:16px}
 }
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+
+/* ── Hero canvas ── */
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.55}
+
+/* ── Hero text reveal ── */
+.hero-badge{animation:heroFadeDown .6s ease both;animation-delay:.1s;opacity:0}
+.hero h1{animation:heroFadeDown .7s ease both;animation-delay:.22s;opacity:0}
+.hero p{animation:heroFadeDown .7s ease both;animation-delay:.38s;opacity:0}
+@keyframes heroFadeDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Page-load stagger ── */
+.load-in{opacity:0;transform:translateY(22px);animation:loadIn .55s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes loadIn{to{opacity:1;transform:translateY(0)}}
+
+/* ── Scroll reveal ── */
+.scroll-reveal{opacity:0;transform:translateY(28px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+.scroll-reveal.revealed{opacity:1;transform:translateY(0)}
+
+/* ── Card hover lift ── */
+.card{transition:box-shadow .25s,transform .25s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.11),0 2px 8px rgba(0,0,0,0.06)}
+
+/* ── Grade button spring ── */
+.grade-btn{transition:transform .18s,box-shadow .18s,border-color .15s,background .15s}
+@keyframes gradeSpring{0%{transform:scale(1)}25%{transform:scale(.86)}55%{transform:scale(1.07)}75%{transform:scale(.97)}100%{transform:scale(1)}}
+.grade-btn.springing{animation:gradeSpring .45s cubic-bezier(.36,.07,.19,.97)}
+
+/* ── Supply tag pop ── */
+@keyframes tagPop{0%{opacity:0;transform:scale(0) rotate(-8deg)}55%{transform:scale(1.15) rotate(2deg)}75%{transform:scale(.95)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.supply-tag{animation:tagPop .3s cubic-bezier(.36,.07,.19,.97) both}
+
+/* ── Tag shake (duplicate) ── */
+@keyframes tagShake{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-6px) rotate(-2deg)}35%{transform:translateX(5px) rotate(1deg)}55%{transform:translateX(-4px) rotate(-1deg)}75%{transform:translateX(3px)}90%{transform:translateX(-2px)}}
+.supply-search-outer.shake{animation:tagShake .38s ease}
+
+/* ── Supply count badge bounce ── */
+@keyframes badgePop{0%{transform:scale(1)}40%{transform:scale(1.4)}70%{transform:scale(.88)}100%{transform:scale(1)}}
+.supply-count-badge.pop{animation:badgePop .3s cubic-bezier(.36,.07,.19,.97)}
+
+/* ── Dropdown item stagger ── */
+.drop-item,.drop-add-custom{opacity:0;animation:dropItemIn .18s ease forwards}
+@keyframes dropItemIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── Generate button shimmer + pulse ── */
+.btn-generate{overflow:hidden}
+.btn-generate::after{content:'';position:absolute;top:0;left:-80%;width:40%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shimmer 3s ease infinite}
+@keyframes shimmer{0%{left:-80%}100%{left:140%}}
+@keyframes btnPulse{0%,100%{box-shadow:0 4px 16px rgba(37,99,235,.3)}50%{box-shadow:0 4px 26px rgba(37,99,235,.55),0 0 0 6px rgba(37,99,235,.08)}}
+.btn-generate:not(:disabled){animation:btnPulse 2.8s ease infinite}
+
+/* ── Loading beaker liquid ── */
+@keyframes liquidRise{0%{transform:translateY(40px);opacity:.3}100%{transform:translateY(0);opacity:1}}
+.liquid-fill{animation:liquidRise 1.2s ease forwards}
+@keyframes flaskWobble{0%,100%{transform:rotate(0)}20%{transform:rotate(-2deg)}40%{transform:rotate(2deg)}60%{transform:rotate(-1.5deg)}80%{transform:rotate(1deg)}}
+.flask-wrap{animation:flaskWobble 2.5s ease infinite}
+@keyframes beakerGlow{0%,100%{filter:drop-shadow(0 0 4px rgba(37,99,235,.2))}50%{filter:drop-shadow(0 0 12px rgba(37,99,235,.5))}}
+.flask-wrap svg{animation:beakerGlow 1.8s ease infinite}
+.bubble{animation:rise 1.6s cubic-bezier(.25,.46,.45,.94) infinite!important}
+
+/* ── Result slide-in ── */
+@keyframes resultReveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.diff-badge.on{animation:resultReveal .5s cubic-bezier(.22,1,.36,1)}
+
+/* ── Difficulty star pop ── */
+@keyframes starBounce{0%{opacity:0;transform:scale(0) rotate(-20deg)}50%{transform:scale(1.4) rotate(6deg)}70%{transform:scale(.88) rotate(-2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+.star-pop{display:inline-block;opacity:0;animation:starBounce .35s cubic-bezier(.36,.07,.19,.97) both}
+
+/* ── Experiment content stagger ── */
+@keyframes expIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.exp-content>*{opacity:0;animation:expIn .45s cubic-bezier(.22,1,.36,1) both}
+
+/* ── Save button success burst ── */
+@keyframes saveBurst{0%{transform:scale(1)}30%{transform:scale(1.18)}55%{transform:scale(.94)}75%{transform:scale(1.05)}100%{transform:scale(1)}}
+.btn-action.saved{animation:saveBurst .4s cubic-bezier(.36,.07,.19,.97);background:#ECFDF5;border-color:#6EE7B7;color:var(--teal)}
+
+/* ── Saved item slide in ── */
+@keyframes savedSlide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+.saved-item-new{animation:savedSlide .35s cubic-bezier(.22,1,.36,1)}
+
+/* ── Toast bounce ── */
+@keyframes toastBounce{0%{opacity:0;transform:translateX(24px) scale(.9)}55%{transform:translateX(-4px) scale(1.02)}75%{transform:translateX(2px)}100%{opacity:1;transform:translateX(0) scale(1)}}
+.toast{animation:toastBounce .4s cubic-bezier(.22,1,.36,1),toastOut .3s ease 2.7s forwards!important}
+
+/* ── Combo 3D tilt ── */
+.combo-card{transform-style:preserve-3d;transition:transform .15s,box-shadow .15s,border-color .15s}
+
+/* ── Combo card pop-in stagger ── */
+@keyframes comboIn{from{opacity:0;transform:scale(.8) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.combo-card{opacity:0;animation:comboIn .4s cubic-bezier(.22,1,.36,1) both}
+
+/* ── Search input animated border ── */
+@keyframes borderPulse{0%,100%{border-color:var(--teal)}50%{border-color:var(--teal-light)}}
+.supply-search-outer:focus-within{animation:borderPulse 2s ease infinite}
+
+/* ── Error bounce ── */
+@keyframes errorBounce{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.error-box.on{animation:errorBounce .45s ease}
+
+/* ── Confetti particle ── */
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9999;animation:confettiDrop linear forwards}
+@keyframes confettiDrop{0%{transform:translateY(0) rotate(0) scale(1);opacity:1}100%{transform:translateY(100vh) rotate(720deg) scale(.4);opacity:0}}
+
+/* ── Magnetic btn ── */
+.btn-generate{will-change:transform}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
@@ -281,6 +393,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 
 <!-- HERO -->
 <section class="hero">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
   <div class="hero-badge">🔬 AI-Powered · K–12 Ready</div>
   <h1>Turn everyday supplies into<br><em>brilliant experiments</em></h1>
   <p>Select your grade level, choose your supplies, and let AI design a complete, safe, hands-on science experiment in seconds.</p>
@@ -291,7 +404,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
   <div>
 
     <!-- FORM CARD -->
-    <div class="card" style="margin-bottom:20px">
+    <div class="card load-in" style="margin-bottom:20px;animation-delay:.15s">
 
       <!-- GRADE -->
       <div class="sec-label">
@@ -416,7 +529,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="card">
+    <div class="card load-in" style="animation-delay:.3s">
       <div class="saved-header">
         <h3>📚 Saved Experiments</h3>
         <span class="saved-count" id="savedCount">0</span>
@@ -1034,6 +1147,278 @@ ${[1,2,3,4].map(()=>'<div class="line"></div>').join('')}
 // ─────────────────────────────────────────────
 //  UTILS
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+//  HERO CANVAS — floating molecules / particles
+// ─────────────────────────────────────────────
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const hero = canvas.parentElement;
+  let W, H, particles = [], nodes = [], edges = [];
+
+  function resize(){
+    W = canvas.width  = hero.offsetWidth;
+    H = canvas.height = hero.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Floating dot particles
+  for (let i=0;i<55;i++) particles.push({
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*2.2+.6,
+    vx:(Math.random()-.5)*.35, vy:-(Math.random()*.5+.15),
+    alpha: Math.random()*.6+.2,
+    color: Math.random()>.5 ? '94,234,212' : '147,197,253'
+  });
+
+  // Molecule nodes
+  function makeMolecule(cx,cy,count,spread){
+    const base = nodes.length;
+    for(let i=0;i<count;i++){
+      nodes.push({
+        x:cx+(Math.random()-.5)*spread, y:cy+(Math.random()-.5)*spread,
+        vx:(Math.random()-.5)*.18, vy:(Math.random()-.5)*.18,
+        r:Math.random()*3.5+2, color:Math.random()>.5?'94,234,212':'147,197,253'
+      });
+    }
+    for(let i=base;i<nodes.length-1;i++) edges.push([i,i+1]);
+    if(count>2) edges.push([base,nodes.length-1]);
+  }
+  makeMolecule(W*.15, H*.3, 4, 60);
+  makeMolecule(W*.8,  H*.6, 3, 50);
+  makeMolecule(W*.55, H*.15, 5, 70);
+  makeMolecule(W*.35, H*.75, 3, 45);
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+
+    // Edges
+    edges.forEach(([a,b])=>{
+      if(!nodes[a]||!nodes[b]) return;
+      ctx.beginPath();
+      ctx.moveTo(nodes[a].x,nodes[a].y);
+      ctx.lineTo(nodes[b].x,nodes[b].y);
+      ctx.strokeStyle='rgba(94,234,212,.18)';
+      ctx.lineWidth=1.2;
+      ctx.stroke();
+    });
+
+    // Nodes
+    nodes.forEach(n=>{
+      ctx.beginPath();
+      ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${n.color},.45)`;
+      ctx.fill();
+      ctx.strokeStyle=`rgba(${n.color},.7)`;
+      ctx.lineWidth=.8;
+      ctx.stroke();
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<-20||n.x>W+20) n.vx*=-1;
+      if(n.y<-20||n.y>H+20) n.vy*=-1;
+    });
+
+    // Particles
+    particles.forEach(p=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(${p.color},${p.alpha})`;
+      ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<-10){ p.y=H+5; p.x=Math.random()*W; }
+      if(p.x<0) p.x=W; if(p.x>W) p.x=0;
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ─────────────────────────────────────────────
+//  GRADE BUTTON SPRING
+// ─────────────────────────────────────────────
+document.querySelectorAll('.grade-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    btn.classList.remove('springing');
+    void btn.offsetWidth; // reflow
+    btn.classList.add('springing');
+    btn.addEventListener('animationend',()=>btn.classList.remove('springing'),{once:true});
+  });
+});
+
+// ─────────────────────────────────────────────
+//  COMBO CARD 3D TILT
+// ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Tilt applied after combos are rendered
+  setTimeout(()=>{
+    document.querySelectorAll('.combo-card').forEach((card,i)=>{
+      card.style.animationDelay = (i*.06)+'s';
+      card.addEventListener('mousemove',e=>{
+        const r=card.getBoundingClientRect();
+        const cx=r.left+r.width/2, cy=r.top+r.height/2;
+        const dx=(e.clientX-cx)/r.width, dy=(e.clientY-cy)/r.height;
+        card.style.transform=`perspective(500px) rotateX(${-dy*12}deg) rotateY(${dx*12}deg) translateY(-3px) scale(1.02)`;
+        card.style.boxShadow=`${-dx*8}px ${-dy*8}px 24px rgba(13,148,136,.18), 0 8px 24px rgba(0,0,0,.1)`;
+      });
+      card.addEventListener('mouseleave',()=>{
+        card.style.transform='';
+        card.style.boxShadow='';
+      });
+      card.addEventListener('mousedown',()=>{
+        card.style.transform='perspective(500px) scale(.95)';
+      });
+      card.addEventListener('mouseup',()=>{
+        card.style.transform='';
+      });
+    });
+  }, 100);
+});
+
+// ─────────────────────────────────────────────
+//  SUPPLY: SHAKE ON DUPLICATE
+// ─────────────────────────────────────────────
+const _origAddSupply = addSupply;
+// Patch addSupply to shake on duplicate
+const supplyOuter = document.getElementById('supplySearchOuter');
+const _patchedAdd = function(name){
+  const trimmed = name.trim();
+  const already = selectedSupplies.map(s=>s.toLowerCase()).includes(trimmed.toLowerCase());
+  if(already){
+    supplyOuter.classList.remove('shake');
+    void supplyOuter.offsetWidth;
+    supplyOuter.classList.add('shake');
+    supplyOuter.addEventListener('animationend',()=>supplyOuter.classList.remove('shake'),{once:true});
+    showToast(`"${trimmed}" is already added`);
+    supplyInput.value=''; renderDropdown('');
+    return;
+  }
+  _origAddSupply(name);
+  // Pop the badge
+  const badge = document.getElementById('supplyCount');
+  badge.classList.remove('pop');
+  void badge.offsetWidth;
+  badge.classList.add('pop');
+  badge.addEventListener('animationend',()=>badge.classList.remove('pop'),{once:true});
+};
+// Override addSupply globally
+window.addSupply = _patchedAdd;
+
+// ─────────────────────────────────────────────
+//  DROPDOWN ITEM STAGGER
+// ─────────────────────────────────────────────
+const _origRender = renderDropdown;
+window.renderDropdown = function(q){
+  _origRender(q);
+  document.querySelectorAll('.drop-item,.drop-add-custom').forEach((el,i)=>{
+    el.style.animationDelay = (i*0.028)+'s';
+  });
+};
+
+// ─────────────────────────────────────────────
+//  DIFFICULTY STARS — staggered pop-in
+// ─────────────────────────────────────────────
+const _origRenderResult = renderResult;
+window.renderResult = function(markdown, ratings){
+  _origRenderResult(markdown, ratings);
+
+  // Star pop stagger
+  setTimeout(()=>{
+    document.querySelectorAll('.diff-val').forEach(el=>{
+      const text = el.textContent;
+      el.innerHTML = '';
+      [...text].forEach((ch,i)=>{
+        const span = document.createElement('span');
+        span.className='star-pop';
+        span.textContent=ch;
+        span.style.animationDelay=(i*.07)+'s';
+        el.appendChild(span);
+      });
+    });
+
+    // Stagger experiment content children
+    const content = document.getElementById('expContent');
+    if(content){
+      [...content.children].forEach((el,i)=>{
+        el.style.animationDelay=(i*.06)+'s';
+      });
+    }
+  }, 50);
+};
+
+// ─────────────────────────────────────────────
+//  SAVE BUTTON SUCCESS ANIMATION + CONFETTI
+// ─────────────────────────────────────────────
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const btn = document.getElementById('saveBtn');
+  const orig = btn.innerHTML;
+  btn.classList.add('saved');
+  btn.innerHTML = '✓ Saved!';
+  setTimeout(()=>{ btn.classList.remove('saved'); btn.innerHTML=orig; }, 1800);
+  launchConfetti();
+});
+
+function launchConfetti(){
+  const colors=['#5EEAD4','#60A5FA','#A78BFA','#34D399','#FCD34D','#F87171','#FB923C'];
+  const btn = document.getElementById('saveBtn');
+  const rect = btn.getBoundingClientRect();
+  for(let i=0;i<52;i++){
+    const el = document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=`
+      left:${rect.left+rect.width/2+( (Math.random()-.5)*160 )}px;
+      top:${rect.top+rect.height/2}px;
+      background:${colors[i%colors.length]};
+      width:${Math.random()*9+4}px;
+      height:${Math.random()*9+4}px;
+      border-radius:${Math.random()>.5?'50%':'2px'};
+      animation-duration:${Math.random()*.8+.7}s;
+      animation-delay:${Math.random()*.25}s;
+    `;
+    document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+  }
+}
+
+// ─────────────────────────────────────────────
+//  SCROLL REVEAL (IntersectionObserver)
+// ─────────────────────────────────────────────
+const revealObs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('revealed'); });
+},{threshold:.12});
+document.querySelectorAll('.result-section, .diff-badge, .card').forEach(el=>{
+  el.classList.add('scroll-reveal');
+  revealObs.observe(el);
+});
+
+// ─────────────────────────────────────────────
+//  MAGNETIC GENERATE BUTTON
+// ─────────────────────────────────────────────
+const genBtn = document.getElementById('generateBtn');
+genBtn.addEventListener('mousemove',e=>{
+  if(genBtn.disabled) return;
+  const r=genBtn.getBoundingClientRect();
+  const dx=(e.clientX-r.left-r.width/2)*0.18;
+  const dy=(e.clientY-r.top-r.height/2)*0.18;
+  genBtn.style.transform=`translateY(-2px) translate(${dx}px,${dy}px)`;
+});
+genBtn.addEventListener('mouseleave',()=>{
+  genBtn.style.transform='';
+});
+
+// ─────────────────────────────────────────────
+//  SAVED ITEM ANIMATION
+// ─────────────────────────────────────────────
+const _origRenderSaved = renderSaved;
+window.renderSaved = function(){
+  _origRenderSaved();
+  document.querySelectorAll('.saved-item').forEach((el,i)=>{
+    el.classList.add('saved-item-new');
+    el.style.animationDelay=(i*0.05)+'s';
+  });
+};
+
 function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function setLoading(on){
   document.getElementById('loadingWrap').classList.toggle('on', on);
