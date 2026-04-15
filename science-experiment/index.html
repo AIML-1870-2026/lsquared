@@ -911,7 +911,8 @@ function updateLegend() {
 const overlay = document.getElementById('overlay');
 document.getElementById('settingsBtn').addEventListener('click', () => {
   overlay.classList.add('on');
-  document.getElementById('keyInput').value = sessionStorage.getItem('api_key') || '';
+  const stored = sessionStorage.getItem('api_key') || '';
+  document.getElementById('keyInput').value = stored;
 });
 document.getElementById('cancelBtn').addEventListener('click', () => overlay.classList.remove('on'));
 overlay.addEventListener('click', e => { if(e.target===overlay) overlay.classList.remove('on'); });
@@ -922,42 +923,63 @@ document.getElementById('eyeBtn').addEventListener('click', () => {
 document.getElementById('clearBtn').addEventListener('click', () => {
   sessionStorage.removeItem('api_key');
   document.getElementById('keyInput').value='';
-  document.getElementById('keyPill').classList.remove('on');
+  updateKeyPill(null);
   showToast('Key cleared'); overlay.classList.remove('on');
 });
 document.getElementById('saveKeyBtn').addEventListener('click', () => {
-  const k = document.getElementById('keyInput').value.trim();
+  const k = sanitizeKey(document.getElementById('keyInput').value);
   if (!k) { showToast('⚠️ Enter an API key first'); return; }
-  sessionStorage.setItem('api_key', k);
-  document.getElementById('keyPill').classList.add('on');
-  showToast('✓ API key saved for this session');
+  if (!k.startsWith('sk-')) { showToast('⚠️ Key should start with sk-'); return; }
+  storeKey(k);
   overlay.classList.remove('on');
 });
 document.addEventListener('keydown', e => { if(e.key==='Escape') overlay.classList.remove('on'); });
-if (sessionStorage.getItem('api_key')) document.getElementById('keyPill').classList.add('on');
+if (sessionStorage.getItem('api_key')) updateKeyPill(sessionStorage.getItem('api_key'));
 
 // ─────────────────────────────────────────────
 //  .ENV DRAG / DROP
 // ─────────────────────────────────────────────
+// Strip every form of whitespace and invisible unicode
+function sanitizeKey(raw) {
+  return raw.replace(/[\s\u00A0\u200B-\u200D\uFEFF\u2028\u2029]/g, '');
+}
+
+function storeKey(clean) {
+  sessionStorage.setItem('api_key', clean);
+  updateKeyPill(clean);
+  showToast('✓ API key saved for this session');
+}
+
+function updateKeyPill(key) {
+  const pill = document.getElementById('keyPill');
+  if (!key) { pill.classList.remove('on'); pill.textContent = 'API key active'; return; }
+  const preview = key.length > 16 ? key.slice(0,10) + '…' + key.slice(-4) : key;
+  pill.classList.add('on');
+  pill.innerHTML = `<span style="opacity:.6;font-size:.65rem">KEY</span> ${preview}`;
+}
+
 function parseEnvKey(text) {
-  // Match ANTHROPIC_API_KEY, ANTHROPIC_KEY, API_KEY (with or without quotes)
   const patterns = [
-    /ANTHROPIC_API_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
-    /ANTHROPIC_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
-    /API_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
+    /ANTHROPIC_API_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
+    /ANTHROPIC_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
+    /API_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
   ];
   for (const pat of patterns) {
     const m = text.match(pat);
-    if (m && m[1] && m[1].length > 8) return m[1].trim();
+    if (m && m[1]) {
+      const clean = sanitizeKey(m[1]);
+      if (clean.length > 8) return clean;
+    }
   }
   return null;
 }
 
 function applyKey(key, source) {
-  sessionStorage.setItem('api_key', key);
-  document.getElementById('keyInput').value = key;
-  document.getElementById('keyPill').classList.add('on');
+  const clean = sanitizeKey(key);
+  sessionStorage.setItem('api_key', clean);
+  document.getElementById('keyInput').value = clean;
   overlay.classList.remove('on');
+  updateKeyPill(clean);
   showToast(`✓ API key loaded from ${source}`);
 }
 
@@ -1091,7 +1113,7 @@ async function generateExperiment() {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-5',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 1600,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }]
@@ -1158,7 +1180,7 @@ Only list the substitutions, no intro.`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method:'POST',
       headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-opus-4-5',max_tokens:400,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
     if (!res.ok) return;
     const d = await res.json();
