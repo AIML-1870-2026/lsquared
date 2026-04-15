@@ -576,8 +576,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
   <div class="modal">
     <h2 id="modalTitle">⚙️ API Key Settings</h2>
     <p class="modal-desc">
-      Key is stored in session memory only — never saved to disk or sent anywhere except Anthropic.<br>
-      Need a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com →</a>
+      Key is stored in session memory only — never saved to disk.<br>
+      Need a key? <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys →</a>
     </p>
 
     <!-- DROP ZONE -->
@@ -585,7 +585,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
       <input type="file" id="envFileInput" accept=".env,text/plain" style="position:absolute;inset:0;opacity:0;cursor:pointer" aria-hidden="true">
       <span class="drop-icon">📄</span>
       <div class="drop-label">Drop your <code style="font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">.env</code> file here</div>
-      <div class="drop-sub">or click to browse — reads <code style="font-family:'JetBrains Mono',monospace">ANTHROPIC_API_KEY</code> automatically</div>
+      <div class="drop-sub">or click to browse — reads <code style="font-family:'JetBrains Mono',monospace">OPENAI_API_KEY</code> or <code style="font-family:'JetBrains Mono',monospace">ANTHROPIC_API_KEY</code></div>
     </div>
 
     <div class="drop-divider">or paste manually</div>
@@ -929,7 +929,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 document.getElementById('saveKeyBtn').addEventListener('click', () => {
   const k = sanitizeKey(document.getElementById('keyInput').value);
   if (!k) { showToast('⚠️ Enter an API key first'); return; }
-  if (!k.startsWith('sk-')) { showToast('⚠️ Key should start with sk-'); return; }
+  if (!k.startsWith('sk-')) { showToast('⚠️ Key should start with sk-…'); return; }
   storeKey(k);
   overlay.classList.remove('on');
 });
@@ -960,6 +960,7 @@ function updateKeyPill(key) {
 
 function parseEnvKey(text) {
   const patterns = [
+    /OPENAI_API_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
     /ANTHROPIC_API_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
     /ANTHROPIC_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
     /API_KEY\s*=\s*["']?([^\r\n"']+)["']?/i,
@@ -1091,7 +1092,7 @@ document.getElementById('generateBtn').addEventListener('click', function(e) {
 
 async function generateExperiment() {
   const apiKey = sessionStorage.getItem('api_key');
-  if (!apiKey) { showError('Set your Anthropic API key first — click ⚙️ Settings in the header.'); return; }
+  if (!apiKey) { showError('Set your OpenAI API key first — click ⚙️ Settings in the header.'); return; }
   if (!selectedGrade) { showError('Please select a grade level before generating.'); return; }
   if (!selectedSupplies.length) { showError('Add at least one supply to generate an experiment.'); return; }
 
@@ -1104,19 +1105,19 @@ async function generateExperiment() {
   const userPrompt = `Grade level: ${selectedGrade}\nAvailable supplies: ${suppliesList}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'gpt-4o',
         max_tokens: 1600,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userPrompt }
+        ]
       })
     });
 
@@ -1127,7 +1128,7 @@ async function generateExperiment() {
     }
 
     const data = await res.json();
-    const raw = data.content[0].text;
+    const raw = data.choices[0].message.content;
 
     // Parse ratings JSON
     const jMatch = raw.match(/^\s*(\{[^\n\r]+\})/);
@@ -1177,14 +1178,14 @@ async function fetchSubs(supplies, apiKey) {
 Supplies: ${supplies}
 Only list the substitutions, no intro.`;
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
       method:'POST',
-      headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:400,messages:[{role:'user',content:prompt}]})
+      headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'gpt-4o-mini',max_tokens:400,messages:[{role:'user',content:prompt}]})
     });
     if (!res.ok) return;
     const d = await res.json();
-    const lines = d.content[0].text.trim().split('\n').filter(l=>l.trim());
+    const lines = d.choices[0].message.content.trim().split('\n').filter(l=>l.trim());
     document.getElementById('subsContent').innerHTML = lines.map(l=>`<div class="sub-card">${marked.parseInline(l)}</div>`).join('');
     document.getElementById('subsSection').classList.add('on');
   } catch(e){}
