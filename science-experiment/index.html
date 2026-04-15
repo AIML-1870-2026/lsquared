@@ -229,6 +229,29 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .legend-tags{display:flex;flex-wrap:wrap;gap:5px}
 .legend-tag{font-size:.75rem;background:#fff;border:1px solid #D1FAE5;border-radius:12px;padding:3px 9px;color:var(--text2)}
 
+/* ── DROP ZONE ── */
+.env-drop-zone{border:2px dashed var(--border2);border-radius:10px;padding:18px 16px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px;position:relative;background:var(--bg)}
+.env-drop-zone:hover{border-color:var(--teal);background:#F0FDFA}
+.env-drop-zone.drag-over{border-color:var(--teal);background:#E6FBF7;box-shadow:0 0 0 4px rgba(13,148,136,.12);transform:scale(1.01)}
+.env-drop-zone.drop-success{border-color:var(--green);background:#F0FDF4;animation:dropSuccess .4s ease}
+.env-drop-zone.drop-error{border-color:var(--red);background:#FFF5F5;animation:dropError .4s ease}
+@keyframes dropSuccess{0%,100%{transform:scale(1)}40%{transform:scale(1.03)}70%{transform:scale(.98)}}
+@keyframes dropError{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.drop-icon{font-size:1.6rem;margin-bottom:6px;display:block;transition:transform .2s}
+.env-drop-zone:hover .drop-icon,.env-drop-zone.drag-over .drop-icon{transform:translateY(-3px) scale(1.1)}
+.drop-label{font-size:.8rem;font-weight:600;color:var(--text2)}
+.drop-sub{font-size:.7rem;color:var(--text3);margin-top:3px}
+.drop-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px;color:var(--text3);font-size:.72rem}
+.drop-divider::before,.drop-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+/* Full-page drag overlay */
+.page-drag-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(13,148,136,.12);backdrop-filter:blur(2px);border:3px dashed var(--teal);margin:12px;border-radius:16px;align-items:center;justify-content:center;flex-direction:column;gap:14px;pointer-events:none}
+.page-drag-overlay.on{display:flex;animation:overlayIn .15s ease}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.page-drag-overlay .overlay-icon{font-size:3.5rem;animation:floatIcon 1s ease infinite alternate}
+@keyframes floatIcon{from{transform:translateY(0)}to{transform:translateY(-10px)}}
+.page-drag-overlay .overlay-text{font-size:1.1rem;font-weight:700;color:var(--teal)}
+.page-drag-overlay .overlay-sub{font-size:.82rem;color:var(--teal);opacity:.75}
+
 /* ── MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(15,30,46,.65);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px}
 .overlay.on{display:flex}
@@ -553,9 +576,20 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
   <div class="modal">
     <h2 id="modalTitle">⚙️ API Key Settings</h2>
     <p class="modal-desc">
-      Paste your Anthropic API key below. It's stored in memory only for this session — never saved to disk or sent anywhere except Anthropic.<br><br>
-      Need a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">Get one free at console.anthropic.com →</a>
+      Key is stored in session memory only — never saved to disk or sent anywhere except Anthropic.<br>
+      Need a key? <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com →</a>
     </p>
+
+    <!-- DROP ZONE -->
+    <div class="env-drop-zone" id="envDropZone" role="button" tabindex="0" aria-label="Drop .env file here">
+      <input type="file" id="envFileInput" accept=".env,text/plain" style="position:absolute;inset:0;opacity:0;cursor:pointer" aria-hidden="true">
+      <span class="drop-icon">📄</span>
+      <div class="drop-label">Drop your <code style="font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px">.env</code> file here</div>
+      <div class="drop-sub">or click to browse — reads <code style="font-family:'JetBrains Mono',monospace">ANTHROPIC_API_KEY</code> automatically</div>
+    </div>
+
+    <div class="drop-divider">or paste manually</div>
+
     <div class="input-group">
       <input type="password" id="keyInput" placeholder="sk-ant-api03-…" aria-label="Anthropic API key">
       <button class="btn-eye" id="eyeBtn" aria-label="Toggle key visibility">👁</button>
@@ -566,6 +600,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
       <button class="btn-primary" id="saveKeyBtn">Save Key</button>
     </div>
   </div>
+</div>
+
+<!-- PAGE DRAG OVERLAY -->
+<div class="page-drag-overlay" id="pageDragOverlay" aria-hidden="true">
+  <div class="overlay-icon">📄</div>
+  <div class="overlay-text">Drop your .env file anywhere</div>
+  <div class="overlay-sub">Reads ANTHROPIC_API_KEY automatically</div>
 </div>
 
 <!-- TOASTS -->
@@ -894,6 +935,96 @@ document.getElementById('saveKeyBtn').addEventListener('click', () => {
 });
 document.addEventListener('keydown', e => { if(e.key==='Escape') overlay.classList.remove('on'); });
 if (sessionStorage.getItem('api_key')) document.getElementById('keyPill').classList.add('on');
+
+// ─────────────────────────────────────────────
+//  .ENV DRAG / DROP
+// ─────────────────────────────────────────────
+function parseEnvKey(text) {
+  // Match ANTHROPIC_API_KEY, ANTHROPIC_KEY, API_KEY (with or without quotes)
+  const patterns = [
+    /ANTHROPIC_API_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
+    /ANTHROPIC_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
+    /API_KEY\s*=\s*["']?([^\s"'\n]+)["']?/i,
+  ];
+  for (const pat of patterns) {
+    const m = text.match(pat);
+    if (m && m[1] && m[1].length > 8) return m[1].trim();
+  }
+  return null;
+}
+
+function applyKey(key, source) {
+  sessionStorage.setItem('api_key', key);
+  document.getElementById('keyInput').value = key;
+  document.getElementById('keyPill').classList.add('on');
+  overlay.classList.remove('on');
+  showToast(`✓ API key loaded from ${source}`);
+}
+
+function handleEnvFile(file) {
+  const zone = document.getElementById('envDropZone');
+  if (!file) return;
+  if (!file.name.endsWith('.env') && file.type !== 'text/plain' && !file.name.includes('env')) {
+    zone.classList.add('drop-error');
+    setTimeout(() => zone.classList.remove('drop-error'), 600);
+    showToast('⚠️ Drop a .env file');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const key = parseEnvKey(e.target.result);
+    if (key) {
+      zone.classList.add('drop-success');
+      setTimeout(() => zone.classList.remove('drop-success'), 900);
+      applyKey(key, file.name);
+    } else {
+      zone.classList.add('drop-error');
+      setTimeout(() => zone.classList.remove('drop-error'), 600);
+      showToast('⚠️ No ANTHROPIC_API_KEY found in file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// Modal drop zone drag events
+const envZone = document.getElementById('envDropZone');
+envZone.addEventListener('dragover',  e => { e.preventDefault(); envZone.classList.add('drag-over'); });
+envZone.addEventListener('dragleave', e => { if(!envZone.contains(e.relatedTarget)) envZone.classList.remove('drag-over'); });
+envZone.addEventListener('drop', e => {
+  e.preventDefault();
+  envZone.classList.remove('drag-over');
+  handleEnvFile(e.dataTransfer.files[0]);
+});
+
+// File input click-to-browse
+document.getElementById('envFileInput').addEventListener('change', e => {
+  handleEnvFile(e.target.files[0]);
+  e.target.value = '';
+});
+
+// ── Full-page drag overlay ──
+let dragCounter = 0;
+const pageOverlay = document.getElementById('pageDragOverlay');
+
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer.types.includes('Files')) return;
+  dragCounter++;
+  pageOverlay.classList.add('on');
+});
+document.addEventListener('dragleave', e => {
+  dragCounter--;
+  if (dragCounter <= 0) { dragCounter = 0; pageOverlay.classList.remove('on'); }
+});
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  dragCounter = 0;
+  pageOverlay.classList.remove('on');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.includes('env') || file.type === 'text/plain')) {
+    handleEnvFile(file);
+  }
+});
 
 // ─────────────────────────────────────────────
 //  TOAST
