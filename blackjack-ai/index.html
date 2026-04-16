@@ -78,6 +78,12 @@ body{
   box-shadow:0 0 12px rgba(34,197,94,0.3);
 }
 .api-zone:hover{border-color:var(--gold-primary)}
+.api-zone.dragover{
+  border-color:var(--neon-blue);
+  box-shadow:0 0 16px rgba(56,189,248,0.45);
+  background:rgba(56,189,248,0.08);
+  transform:scale(1.03);
+}
 .api-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .api-label{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--text-muted)}
 .api-status{font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:500}
@@ -1242,8 +1248,7 @@ function executeRecommendation(){
 // ============================================================
 //  .ENV UPLOAD
 // ============================================================
-document.getElementById('envFileInput').addEventListener('change', async(e)=>{
-  const file=e.target.files[0];
+async function loadEnvFile(file){
   if(!file) return;
   const text=await file.text();
   const match=text.match(/ANTHROPIC_API_KEY\s*=\s*([^\s\n]+)/);
@@ -1261,7 +1266,28 @@ document.getElementById('envFileInput').addEventListener('change', async(e)=>{
     document.getElementById('apiZone').classList.remove('loaded');
     showToast('Could not find ANTHROPIC_API_KEY in .env file','error');
   }
+}
+document.getElementById('envFileInput').addEventListener('change', async(e)=>{
+  await loadEnvFile(e.target.files[0]);
   e.target.value='';
+});
+// Drag-and-drop on the entire page (not just the zone) so it's easy to drop anywhere
+const apiZone=document.getElementById('apiZone');
+['dragenter','dragover'].forEach(evt=>
+  document.addEventListener(evt,e=>{
+    e.preventDefault();
+    if([...e.dataTransfer.types].includes('Files')) apiZone.classList.add('dragover');
+  })
+);
+['dragleave','drop'].forEach(evt=>
+  document.addEventListener(evt,e=>{
+    apiZone.classList.remove('dragover');
+  })
+);
+document.addEventListener('drop',async e=>{
+  e.preventDefault();
+  const file=e.dataTransfer.files[0];
+  if(file) await loadEnvFile(file);
 });
 
 // ============================================================
