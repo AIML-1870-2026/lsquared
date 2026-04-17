@@ -1251,7 +1251,7 @@ function executeRecommendation(){
 async function loadEnvFile(file){
   if(!file) return;
   const text=await file.text();
-  const match=text.match(/ANTHROPIC_API_KEY\s*=\s*([^\s\n]+)/);
+  const match=text.match(/ANTHROPIC_API_KEY\s*=\s*["']?([^\s\n"']+)["']?/);
   if(match&&match[1].startsWith('sk-ant-')){
     apiKey=match[1];
     document.getElementById('apiStatus').textContent='✓ Loaded';
