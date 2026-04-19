@@ -612,7 +612,7 @@ body{
     <span class="api-status" id="apiStatus">Drop .env or paste key</span>
   </div>
   <div class="api-paste-wrap" id="apiPasteWrap">
-    <input type="password" id="apiPasteInput" class="api-paste-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    <input type="password" id="apiPasteInput" class="api-paste-input" placeholder="sk-ant-... or sk-proj-..." autocomplete="off" spellcheck="false">
     <button class="api-paste-btn" id="apiPasteBtn" onclick="submitPastedKey()">Set</button>
   </div>
   <div class="risk-selector" title="AI risk profile">
@@ -1158,54 +1158,50 @@ Format: {"action":"hit"|"stand"|"double","reasoning":"...","confidence":<0-100>,
 No markdown, no text outside JSON.`;
 }
 async function callAI(isRetry=false){
-  if(!apiKey){ document.getElementById('aiReasoning').textContent='Upload a .env file with ANTHROPIC_API_KEY to enable AI.'; return; }
+  if(!apiKey){ document.getElementById('aiReasoning').textContent='Paste your API key or drop a .env file to enable AI.'; return; }
   setThinking(true);
   pendingRetry=null;
-  const pt=handTotal(playerHand);
   const dl=dealerHand[0]?`${dealerHand[0].rank}${dealerHand[0].suit}`:'?';
   const playerCards=playerHand.map(c=>`${c.rank}${c.suit}`).join(', ');
   const softLabel=handLabel(playerHand);
   const canDouble=playerHand.length===2;
   const userMsg=`Player hand: [${playerCards}]. Player total: ${softLabel}. Dealer up card: ${dl}. Balance: $${balance}. Current bet: $${bet}. Can double: ${canDouble}. What is the optimal Blackjack action?`;
-  const body={
-    model:'claude-sonnet-4-20250514',
-    max_tokens:300,
-    system:buildSystemPrompt(),
-    messages:[{role:'user',content:userMsg}]
-  };
-  console.log('[BlackjackAI] REQUEST:', JSON.stringify(body,null,2));
+  const systemPrompt=buildSystemPrompt();
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'x-api-key':apiKey,
-        'anthropic-version':'2023-06-01',
-        'content-type':'application/json',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body:JSON.stringify(body)
-    });
-    const data=await res.json();
-    console.log('[BlackjackAI] RESPONSE:', JSON.stringify(data,null,2));
-    if(!res.ok){
-      const msg=data.error?.message||`HTTP ${res.status}`;
-      showAiError(msg, true);
-      return;
+    let raw;
+    if(apiProvider==='anthropic'){
+      const body={model:'claude-sonnet-4-20250514',max_tokens:300,system:systemPrompt,messages:[{role:'user',content:userMsg}]};
+      console.log('[BlackjackAI] Anthropic REQUEST:',JSON.stringify(body,null,2));
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify(body)
+      });
+      const data=await res.json();
+      console.log('[BlackjackAI] Anthropic RESPONSE:',JSON.stringify(data,null,2));
+      if(!res.ok){showAiError(data.error?.message||`HTTP ${res.status}`,true);return;}
+      raw=data.content[0].text.trim();
+    } else {
+      const body={model:'gpt-4o-mini',max_tokens:300,messages:[{role:'system',content:systemPrompt},{role:'user',content:userMsg}]};
+      console.log('[BlackjackAI] OpenAI REQUEST:',JSON.stringify(body,null,2));
+      const res=await fetch('https://api.openai.com/v1/chat/completions',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+apiKey,'content-type':'application/json'},
+        body:JSON.stringify(body)
+      });
+      const data=await res.json();
+      console.log('[BlackjackAI] OpenAI RESPONSE:',JSON.stringify(data,null,2));
+      if(!res.ok){showAiError(data.error?.message||`HTTP ${res.status}`,true);return;}
+      raw=data.choices[0].message.content.trim();
     }
-    const raw=data.content[0].text.trim();
+    const clean=raw.replace(/```json?/g,'').replace(/```/g,'').trim();
     let parsed;
-    try{
-      // Strip markdown code fences if present
-      const clean=raw.replace(/```json?/g,'').replace(/```/g,'').trim();
-      parsed=JSON.parse(clean);
-    } catch(e){
-      showAiError('Invalid JSON response. Raw: '+raw.substring(0,100), false);
-      return;
-    }
+    try{parsed=JSON.parse(clean);}
+    catch(e){showAiError('Invalid JSON response. Raw: '+raw.substring(0,100),false);return;}
     setThinking(false);
     displayAiResult(parsed);
   } catch(e){
-    showAiError('Network error: '+e.message, true);
+    showAiError('Network error: '+e.message,true);
   }
 }
 function showAiError(msg, canRetry){
@@ -1271,7 +1267,8 @@ function executeRecommendation(){
 async function loadEnvFile(file){
   if(!file) return;
   const text=await file.text();
-  const match=text.match(/ANTHROPIC_API_KEY\s*=\s*["']?([^\s\n"']+)["']?/);
+  const match=text.match(/ANTHROPIC_API_KEY\s*=\s*["']?([^\s\n"']+)["']?/)
+           || text.match(/OPENAI_API_KEY\s*=\s*["']?([^\s\n"']+)["']?/);
   if(match) applyApiKey(match[1]);
   else {
     apiKey='';
@@ -1304,25 +1301,30 @@ document.addEventListener('drop',async e=>{
   if(file) await loadEnvFile(file);
 });
 
+let apiProvider=''; // 'anthropic' | 'openai'
 function applyApiKey(key){
   key=key.trim().replace(/^["']|["']$/g,'');
-  if(key.startsWith('sk-ant-')){
+  const isAnthropic=key.startsWith('sk-ant-');
+  const isOpenAI=key.startsWith('sk-proj-')||( key.startsWith('sk-') && !key.startsWith('sk-ant-'));
+  if(isAnthropic||isOpenAI){
     apiKey=key;
-    document.getElementById('apiStatus').textContent='✓ Loaded';
+    apiProvider=isAnthropic?'anthropic':'openai';
+    const providerLabel=isAnthropic?'Anthropic':'OpenAI';
+    document.getElementById('apiStatus').textContent=`✓ ${providerLabel}`;
     document.getElementById('apiStatus').className='api-status ok';
     document.getElementById('apiZone').classList.add('loaded');
     const inp=document.getElementById('apiPasteInput');
     inp.classList.add('ok');
     inp.value=key.substring(0,12)+'••••••••';
-    showToast('API key loaded','success');
-    console.log('[BlackjackAI] API key set (redacted)');
+    showToast(`${providerLabel} API key loaded`,'success');
+    console.log('[BlackjackAI] API key set, provider:',providerLabel);
   } else {
-    apiKey='';
+    apiKey='';apiProvider='';
     document.getElementById('apiStatus').textContent='✗ Invalid';
     document.getElementById('apiStatus').className='api-status err';
     document.getElementById('apiZone').classList.remove('loaded');
     document.getElementById('apiPasteInput').classList.remove('ok');
-    showToast('Key must start with sk-ant-','error');
+    showToast('Paste an Anthropic (sk-ant-) or OpenAI (sk-proj-) key','error');
   }
 }
 function submitPastedKey(){
@@ -1335,7 +1337,7 @@ document.getElementById('apiPasteInput').addEventListener('keydown',e=>{
 document.getElementById('apiPasteInput').addEventListener('paste',e=>{
   setTimeout(()=>{
     const val=document.getElementById('apiPasteInput').value.trim().replace(/^["']|["']$/g,'');
-    if(val.startsWith('sk-ant-')) applyApiKey(val);
+    if(val.startsWith('sk-')) applyApiKey(val);
   },0);
 });
 
