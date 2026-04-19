@@ -1052,8 +1052,9 @@ async function callAI(){
   const sys=buildSystemPrompt();
   try{
     let raw;
+    const maxTok={quick:200,standard:400,deep:700}[detailLevel]||400;
     if(apiProvider==='openai'){
-      const body={model:'gpt-4o-mini',max_tokens:300,messages:[{role:'system',content:sys},{role:'user',content:msg}]};
+      const body={model:'gpt-4o-mini',max_tokens:maxTok,messages:[{role:'system',content:sys},{role:'user',content:msg}]};
       console.log('[AI] OpenAI →',body);
       const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'content-type':'application/json'},body:JSON.stringify(body)});
       const d=await r.json();
@@ -1061,7 +1062,7 @@ async function callAI(){
       if(!r.ok){showAIError(d.error?.message||`HTTP ${r.status}`,true);return;}
       raw=d.choices[0].message.content.trim();
     } else {
-      const body={model:'claude-sonnet-4-20250514',max_tokens:300,system:sys,messages:[{role:'user',content:msg}]};
+      const body={model:'claude-sonnet-4-20250514',max_tokens:maxTok,system:sys,messages:[{role:'user',content:msg}]};
       console.log('[AI] Anthropic →',body);
       const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});
       const d=await r.json();
@@ -1069,7 +1070,19 @@ async function callAI(){
       if(!r.ok){showAIError(d.error?.message||`HTTP ${r.status}`,true);return;}
       raw=d.content[0].text.trim();
     }
-    const clean=raw.replace(/```json?/g,'').replace(/```/g,'').trim();
+    // Strip markdown fences, then extract the first complete JSON object
+    const stripped=raw.replace(/```json?/g,'').replace(/```/g,'').trim();
+    const jsonStart=stripped.indexOf('{');
+    let clean=stripped;
+    if(jsonStart!==-1){
+      // Walk forward to find the matching closing brace
+      let depth=0,end=-1;
+      for(let i=jsonStart;i<stripped.length;i++){
+        if(stripped[i]==='{')depth++;
+        else if(stripped[i]==='}'){depth--;if(depth===0){end=i;break;}}
+      }
+      clean=end!==-1?stripped.slice(jsonStart,end+1):stripped.slice(jsonStart);
+    }
     let parsed;
     try{parsed=JSON.parse(clean);}
     catch(e){showAIError('Bad JSON: '+raw.slice(0,80),false);return;}
