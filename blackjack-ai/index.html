@@ -89,6 +89,22 @@ body{
 .api-status{font-family:'DM Mono',monospace;font-size:0.78rem;font-weight:500}
 .api-status.ok{color:var(--success)}
 .api-status.err{color:var(--danger)}
+.api-paste-wrap{display:flex;align-items:center;gap:6px}
+.api-paste-input{
+  font-family:'DM Mono',monospace;font-size:0.75rem;
+  background:rgba(17,24,39,0.8);border:1px solid var(--border);border-radius:8px;
+  color:var(--white);padding:5px 10px;width:170px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.api-paste-input:focus{border-color:var(--neon-blue);box-shadow:0 0 8px rgba(56,189,248,0.25)}
+.api-paste-input.ok{border-color:var(--success);box-shadow:0 0 8px rgba(34,197,94,0.25)}
+.api-paste-btn{
+  font-family:'DM Mono',monospace;font-size:0.75rem;font-weight:500;
+  padding:5px 12px;border-radius:7px;border:1px solid var(--border);
+  background:rgba(201,168,76,0.15);color:var(--gold-primary);cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.api-paste-btn:hover{background:rgba(201,168,76,0.3);border-color:var(--gold-primary)}
 .risk-selector{display:flex;gap:6px;align-items:center}
 .risk-btn{
   font-family:'DM Mono',monospace;font-size:0.7rem;
@@ -590,10 +606,14 @@ body{
 <!-- HEADER -->
 <header id="header">
   <h1>♠ Blackjack <span>AI Agent</span></h1>
-  <div class="api-zone" id="apiZone" title="Upload your .env file with ANTHROPIC_API_KEY">
+  <div class="api-zone" id="apiZone" title="Drop .env file or click to upload">
     <input type="file" id="envFileInput" accept=".env,text/plain">
     <span class="api-label">🔑 API KEY:</span>
-    <span class="api-status" id="apiStatus">Upload .env</span>
+    <span class="api-status" id="apiStatus">Drop .env or paste key</span>
+  </div>
+  <div class="api-paste-wrap" id="apiPasteWrap">
+    <input type="password" id="apiPasteInput" class="api-paste-input" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    <button class="api-paste-btn" id="apiPasteBtn" onclick="submitPastedKey()">Set</button>
   </div>
   <div class="risk-selector" title="AI risk profile">
     <span style="font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text-muted)">RISK:</span>
@@ -1252,16 +1272,10 @@ async function loadEnvFile(file){
   if(!file) return;
   const text=await file.text();
   const match=text.match(/ANTHROPIC_API_KEY\s*=\s*["']?([^\s\n"']+)["']?/);
-  if(match&&match[1].startsWith('sk-ant-')){
-    apiKey=match[1];
-    document.getElementById('apiStatus').textContent='✓ Loaded';
-    document.getElementById('apiStatus').className='api-status ok';
-    document.getElementById('apiZone').classList.add('loaded');
-    showToast('API key loaded successfully','success');
-    console.log('[BlackjackAI] API key loaded (redacted)');
-  } else {
+  if(match) applyApiKey(match[1]);
+  else {
     apiKey='';
-    document.getElementById('apiStatus').textContent='✗ Invalid';
+    document.getElementById('apiStatus').textContent='✗ Not found';
     document.getElementById('apiStatus').className='api-status err';
     document.getElementById('apiZone').classList.remove('loaded');
     showToast('Could not find ANTHROPIC_API_KEY in .env file','error');
@@ -1288,6 +1302,41 @@ document.addEventListener('drop',async e=>{
   e.preventDefault();
   const file=e.dataTransfer.files[0];
   if(file) await loadEnvFile(file);
+});
+
+function applyApiKey(key){
+  key=key.trim().replace(/^["']|["']$/g,'');
+  if(key.startsWith('sk-ant-')){
+    apiKey=key;
+    document.getElementById('apiStatus').textContent='✓ Loaded';
+    document.getElementById('apiStatus').className='api-status ok';
+    document.getElementById('apiZone').classList.add('loaded');
+    const inp=document.getElementById('apiPasteInput');
+    inp.classList.add('ok');
+    inp.value=key.substring(0,12)+'••••••••';
+    showToast('API key loaded','success');
+    console.log('[BlackjackAI] API key set (redacted)');
+  } else {
+    apiKey='';
+    document.getElementById('apiStatus').textContent='✗ Invalid';
+    document.getElementById('apiStatus').className='api-status err';
+    document.getElementById('apiZone').classList.remove('loaded');
+    document.getElementById('apiPasteInput').classList.remove('ok');
+    showToast('Key must start with sk-ant-','error');
+  }
+}
+function submitPastedKey(){
+  applyApiKey(document.getElementById('apiPasteInput').value);
+}
+// Also fire on Enter key or paste+valid
+document.getElementById('apiPasteInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') submitPastedKey();
+});
+document.getElementById('apiPasteInput').addEventListener('paste',e=>{
+  setTimeout(()=>{
+    const val=document.getElementById('apiPasteInput').value.trim().replace(/^["']|["']$/g,'');
+    if(val.startsWith('sk-ant-')) applyApiKey(val);
+  },0);
 });
 
 // ============================================================
