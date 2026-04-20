@@ -1053,7 +1053,7 @@ async function callAI(){
   const sys=buildSystemPrompt();
   try{
     let raw;
-    const maxTok={quick:200,standard:400,deep:700}[detailLevel]||400;
+    const maxTok={quick:300,standard:700,deep:1100}[detailLevel]||700;
     if(apiProvider==='openai'){
       const body={model:'gpt-4o-mini',max_tokens:maxTok,messages:[{role:'system',content:sys},{role:'user',content:msg}]};
       console.log('[AI] OpenAI →',body);
@@ -1086,7 +1086,23 @@ async function callAI(){
     }
     let parsed;
     try{parsed=JSON.parse(clean);}
-    catch(e){showAIError('Bad JSON: '+raw.slice(0,80),false);return;}
+    catch(e){
+      // Truncated response — regex-salvage the fields we can extract
+      const actionM=raw.match(/"action"\s*:\s*"(hit|stand|double)"/i);
+      const reasonM=raw.match(/"reasoning"\s*:\s*"([^"]{0,300})/i);
+      const confM=raw.match(/"confidence"\s*:\s*(\d+)/);
+      if(actionM){
+        parsed={
+          action:actionM[1],
+          reasoning:(reasonM?reasonM[1]+'…':''),
+          confidence:confM?parseInt(confM[1]):60,
+          key_factors:[]
+        };
+        console.warn('[AI] Salvaged partial JSON, action:',parsed.action);
+      } else {
+        showAIError('Could not parse response. Try Standard detail level.',false);return;
+      }
+    }
     setThinking(false);
     showAIResult(parsed);
   } catch(e){
